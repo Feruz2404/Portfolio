@@ -2,24 +2,45 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 
 export default async function AdminProjectsPage() {
-  const projects = await prisma.project.findMany({ orderBy: { createdAt: "desc" } });
+  const projects = await prisma.project.findMany({ orderBy: { updatedAt: "desc" } });
 
   return (
-    <div>
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Projects</h1>
-        <Link className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground" href="/admin/projects/new">
-          New
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
+          <p className="mt-1 text-sm text-white/60">Create and manage projects.</p>
+        </div>
+        <Link href="/admin/projects/new" className="rounded-md bg-brand-violet px-3 py-2 text-sm font-semibold">
+          New project
         </Link>
       </div>
 
-      <div className="mt-6 grid gap-3">
-        {projects.map((p) => (
-          <Link key={p.id} href={`/admin/projects/${p.id}/edit`} className="rounded-lg border border-border bg-card p-4 hover:bg-card/80">
-            <div className="font-semibold">{p.title}</div>
-            <div className="text-sm text-muted-foreground">{p.slug}</div>
-          </Link>
-        ))}
+      <div className="overflow-hidden rounded-xl border border-white/10">
+        <table className="w-full text-sm">
+          <thead className="bg-surface-01 text-left text-white/60">
+            <tr>
+              <th className="px-4 py-3">Title</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Featured</th>
+              <th className="px-4 py-3">Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {projects.map((p) => (
+              <tr key={p.id} className="border-t border-white/10">
+                <td className="px-4 py-3">
+                  <Link className="hover:underline" href={`/admin/projects/${p.id}/edit`}>
+                    {p.title}
+                  </Link>
+                </td>
+                <td className="px-4 py-3 text-white/70">{p.status}</td>
+                <td className="px-4 py-3 text-white/70">{p.featured ? "Yes" : "No"}</td>
+                <td className="px-4 py-3 text-white/60">{p.updatedAt.toISOString().slice(0, 10)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

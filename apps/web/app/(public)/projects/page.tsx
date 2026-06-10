@@ -1,31 +1,30 @@
-import { prisma } from "@/lib/db";
 import Link from "next/link";
-import { Navigation } from "@/components/shared/Navigation";
-import { Footer } from "@/components/shared/Footer";
+import { prisma } from "@/lib/db";
 
 export default async function ProjectsPage() {
-  const projects = await prisma.project.findMany({
-    where: { status: { in: ["IN_PROGRESS", "COMPLETED"] } },
-    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-  });
+  const projects = await prisma.project.findMany({ orderBy: [{ featured: "desc" }, { createdAt: "desc" }] });
 
   return (
-    <div className="min-h-screen">
-      <Navigation />
-      <main className="px-6">
-        <section className="mx-auto max-w-6xl py-16">
-          <h1 className="text-4xl font-bold">Projects</h1>
-          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {projects.map((p) => (
-              <Link key={p.id} href={`/projects/${p.slug}`} className="rounded-xl border border-border bg-card p-5 hover:bg-card/80">
+    <main className="min-h-dvh px-6 py-16">
+      <div className="mx-auto max-w-5xl">
+        <h1 className="text-3xl font-semibold tracking-tight">Projects</h1>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {projects.map((p) => (
+            <Link
+              key={p.id}
+              href={`/projects/${p.slug}`}
+              className="rounded-xl border border-white/10 bg-surface-01 p-5 hover:border-white/20"
+            >
+              <div className="flex items-center justify-between">
                 <div className="text-lg font-semibold">{p.title}</div>
-                <div className="mt-2 line-clamp-3 text-sm text-muted-foreground">{p.description}</div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      </main>
-      <Footer />
-    </div>
+                {p.featured ? <span className="text-xs text-brand-cyan">Featured</span> : null}
+              </div>
+              <p className="mt-2 line-clamp-2 text-sm text-white/60">{p.description}</p>
+              <div className="mt-4 text-xs text-white/50">{p.category}</div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </main>
   );
 }
