@@ -4,11 +4,10 @@ import { prisma } from "@/lib/db";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 
-  const [projects, posts, members, studies] = await Promise.all([
+  const [projects, posts, members] = await Promise.all([
     prisma.project.findMany({ where: { status: "COMPLETED" }, select: { slug: true, updatedAt: true } }).catch(() => []),
     prisma.blogPost.findMany({ where: { status: "PUBLISHED" }, select: { slug: true, updatedAt: true } }).catch(() => []),
-    prisma.teamMember.findMany({ where: { isActive: true }, select: { slug: true, updatedAt: true } }).catch(() => []),
-    prisma.caseStudy.findMany({ where: { published: true }, select: { projectId: true, updatedAt: true } }).catch(() => [])
+    prisma.teamMember.findMany({ where: { isActive: true }, select: { slug: true, updatedAt: true } }).catch(() => [])
   ]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
