@@ -3,13 +3,9 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 
 const schema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  company: z.string().optional(),
-  phone: z.string().optional(),
-  message: z.string().min(10),
-  budget: z.string().optional(),
-  projectType: z.string().optional()
+  event: z.string().min(1),
+  properties: z.record(z.any()).optional(),
+  sessionId: z.string().optional()
 });
 
 export async function POST(req: Request) {
@@ -17,12 +13,13 @@ export async function POST(req: Request) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
-  const lead = await prisma.contact.create({
+  await prisma.analyticsEvent.create({
     data: {
-      ...parsed.data,
-      source: "website"
+      event: parsed.data.event,
+      properties: parsed.data.properties,
+      sessionId: parsed.data.sessionId
     }
   });
 
-  return NextResponse.json({ lead }, { status: 201 });
+  return NextResponse.json({ ok: true });
 }
