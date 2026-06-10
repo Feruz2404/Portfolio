@@ -1,4 +1,10 @@
 {
-  "nav": {"about":"О нас","projects":"Проекты","team":"Команда","services":"Услуги","testimonials":"Отзывы","blog":"Блог","contact":"Контакты"},
-  "hero": {"headline":"Enterprise Portfolio","subheadline":"Портфолио-платформа мирового уровня.","ctaPrimary":"Проекты →","ctaSecondary":"Связаться"}
+  "nav": {
+    "about": "Обо мне",
+    "projects": "Проекты",
+    "team": "Команда",
+    "services": "Услуги",
+    "blog": "Блог",
+    "contact": "Контакты"
+  }
 }

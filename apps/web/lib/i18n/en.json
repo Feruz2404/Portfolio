@@ -1,4 +1,10 @@
 {
-  "nav": {"about":"About","projects":"Projects","team":"Team","services":"Services","testimonials":"Testimonials","blog":"Blog","contact":"Contact"},
-  "hero": {"headline":"Enterprise Portfolio","subheadline":"World-class portfolio platform.","ctaPrimary":"Projects →","ctaSecondary":"Contact"}
+  "nav": {
+    "about": "About",
+    "projects": "Projects",
+    "team": "Team",
+    "services": "Services",
+    "blog": "Blog",
+    "contact": "Contact"
+  }
 }

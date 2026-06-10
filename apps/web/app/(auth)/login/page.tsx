@@ -1,23 +1,20 @@
-import { signIn } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/server-auth";
+import LoginForm from "@/components/auth/LoginForm";
 
-export default function LoginPage() {
-  async function action(formData: FormData) {
-    "use server";
-    await signIn("credentials", {
-      email: String(formData.get("email") ?? ""),
-      password: String(formData.get("password") ?? ""),
-      redirectTo: "/admin/dashboard",
-    });
-  }
+export default async function LoginPage() {
+  const session = await auth();
+  if (session?.user) redirect("/admin/dashboard");
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6">
-      <h1 className="text-2xl font-bold">Admin Login</h1>
-      <form action={action} className="mt-6 grid gap-3">
-        <input className="rounded-md border border-border bg-background px-3 py-2" name="email" type="email" placeholder="email" required />
-        <input className="rounded-md border border-border bg-background px-3 py-2" name="password" type="password" placeholder="password" required />
-        <button className="rounded-md bg-primary px-3 py-2 text-primary-foreground">Sign in</button>
-      </form>
-    </div>
+    <main className="min-h-dvh px-6 py-16">
+      <div className="mx-auto w-full max-w-md rounded-xl border border-white/10 bg-surface-01 p-6">
+        <h1 className="text-xl font-semibold">Admin Login</h1>
+        <p className="mt-1 text-sm text-white/60">Sign in to manage content and leads.</p>
+        <div className="mt-6">
+          <LoginForm />
+        </div>
+      </div>
+    </main>
   );
 }

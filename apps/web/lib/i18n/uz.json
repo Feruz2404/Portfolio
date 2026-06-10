@@ -1,4 +1,10 @@
 {
-  "nav": {"about":"Men haqimda","projects":"Loyihalar","team":"Jamoa","services":"Xizmatlar","testimonials":"Fikrlar","blog":"Blog","contact":"Aloqa"},
-  "hero": {"headline":"Enterprise Portfolio","subheadline":"Jahon darajasidagi portfolio platforma.","ctaPrimary":"Loyihalar →","ctaSecondary":"Bog'lanish"}
+  "nav": {
+    "about": "Men haqimda",
+    "projects": "Loyihalar",
+    "team": "Jamoa",
+    "services": "Xizmatlar",
+    "blog": "Blog",
+    "contact": "Aloqa"
+  }
 }
