@@ -5,6 +5,9 @@
   "workspaces": [
     "apps/*"
   ],
+  "dependencies": {
+    "autoprefixer": "^10.4.20"
+  },
   "scripts": {
     "dev": "npm --workspace apps/web run dev",
     "build": "npm --workspace apps/web run build",
