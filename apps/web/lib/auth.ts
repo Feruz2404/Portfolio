@@ -41,16 +41,20 @@ export const authOptions: NextAuthConfig = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.role = (user as any).role;
+      if (user) {
+        token.role = (user as any).role;
+        token.uid = (user as any).id;
+      }
       return token;
     },
     async session({ session, token }) {
       (session.user as any).role = token.role;
+      (session.user as any).id = token.uid;
       return session;
     }
   },
   pages: {
-    signIn: "/login",
-    error: "/unauthorized"
+    signIn: "/admin/login",
+    error: "/admin/unauthorized"
   }
 };

@@ -1,23 +1,15 @@
-import { Navigation } from "@/components/shared/Navigation";
-import { Footer } from "@/components/shared/Footer";
+import ContactForm from "@/components/public/contact/ContactForm";
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen">
-      <Navigation />
-      <main className="px-6">
-        <section className="mx-auto max-w-2xl py-16">
-          <h1 className="text-4xl font-bold">Contact</h1>
-          <form className="mt-8 grid gap-3" action="/api/contacts" method="post">
-            <input className="rounded-md border border-border bg-background px-3 py-2" name="name" placeholder="Name" required />
-            <input className="rounded-md border border-border bg-background px-3 py-2" name="email" type="email" placeholder="Email" required />
-            <input className="rounded-md border border-border bg-background px-3 py-2" name="company" placeholder="Company" />
-            <textarea className="min-h-32 rounded-md border border-border bg-background px-3 py-2" name="message" placeholder="Message" required />
-            <button className="rounded-md bg-primary px-3 py-2 text-primary-foreground">Send</button>
-          </form>
-        </section>
-      </main>
-      <Footer />
-    </div>
+    <main className="min-h-dvh px-6 py-16">
+      <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-2">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Contact</h1>
+          <p className="mt-4 text-white/70">Tell us about your project. We will respond quickly.</p>
+        </div>
+        <ContactForm />
+      </div>
+    </main>
   );
 }
