@@ -2,24 +2,43 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 
 export default async function AdminTeamPage() {
-  const members = await prisma.teamMember.findMany({ orderBy: { order: "asc" } });
+  const team = await prisma.teamMember.findMany({ orderBy: [{ order: "asc" }, { updatedAt: "desc" }] });
 
   return (
-    <div>
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Team</h1>
-        <Link className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground" href="/admin/team/new">
-          New
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Team</h1>
+          <p className="mt-1 text-sm text-white/60">Manage team member profiles.</p>
+        </div>
+        <Link href="/admin/team/new" className="rounded-md bg-brand-violet px-3 py-2 text-sm font-semibold">
+          New member
         </Link>
       </div>
 
-      <div className="mt-6 grid gap-3">
-        {members.map((m) => (
-          <Link key={m.id} href={`/admin/team/${m.id}/edit`} className="rounded-lg border border-border bg-card p-4 hover:bg-card/80">
-            <div className="font-semibold">{m.fullName}</div>
-            <div className="text-sm text-muted-foreground">{m.slug}</div>
-          </Link>
-        ))}
+      <div className="overflow-hidden rounded-xl border border-white/10">
+        <table className="w-full text-sm">
+          <thead className="bg-surface-01 text-left text-white/60">
+            <tr>
+              <th className="px-4 py-3">Name</th>
+              <th className="px-4 py-3">Position</th>
+              <th className="px-4 py-3">Active</th>
+            </tr>
+          </thead>
+          <tbody>
+            {team.map((m) => (
+              <tr key={m.id} className="border-t border-white/10">
+                <td className="px-4 py-3">
+                  <Link href={`/admin/team/${m.id}/edit`} className="hover:underline">
+                    {m.fullName}
+                  </Link>
+                </td>
+                <td className="px-4 py-3 text-white/70">{m.position}</td>
+                <td className="px-4 py-3 text-white/70">{m.isActive ? "Yes" : "No"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
