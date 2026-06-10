@@ -10,13 +10,11 @@
     "build": "npm --workspace apps/web run build",
     "start": "npm --workspace apps/web run start",
     "lint": "npm --workspace apps/web run lint",
-    "format": "prettier -w .",
+    "typecheck": "npm --workspace apps/web run typecheck",
+    "format": "npm --workspace apps/web run format",
     "prisma:generate": "npm --workspace apps/web run prisma:generate",
     "prisma:migrate": "npm --workspace apps/web run prisma:migrate",
     "prisma:studio": "npm --workspace apps/web run prisma:studio",
-    "prisma:seed": "npm --workspace apps/web run prisma:seed"
-  },
-  "devDependencies": {
-    "prettier": "^3.3.3"
+    "seed": "npm --workspace apps/web run seed"
   }
 }

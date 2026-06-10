@@ -86,7 +86,8 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Project {
@@ -129,12 +130,13 @@ model Project {
 
 model ProjectTeamMember {
   id        String     @id @default(cuid())
-  project   Project    @relation(fields: [projectId], references: [id])
   projectId String
-  member    TeamMember @relation(fields: [memberId], references: [id])
   memberId  String
   role      String
   createdAt DateTime   @default(now())
+
+  project Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  member  TeamMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, memberId])
 }
@@ -167,9 +169,10 @@ model Achievement {
   title       String
   description String?
   date        DateTime
-  member      TeamMember @relation(fields: [memberId], references: [id])
   memberId    String
   createdAt   DateTime   @default(now())
+
+  member TeamMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
 }
 
 model BlogPost {
@@ -184,14 +187,14 @@ model BlogPost {
   views       Int        @default(0)
   readingTime Int?
   authorId    String
-  author      User       @relation(fields: [authorId], references: [id])
+  categoryId  String?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  tags       PostTag[]
-  category   BlogCategory? @relation(fields: [categoryId], references: [id])
-  categoryId String?
-  seoMeta    SeoMeta?
+  author   User          @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  tags     PostTag[]
+  category BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  seoMeta  SeoMeta?
 
   @@index([slug])
   @@index([status])
@@ -199,34 +202,36 @@ model BlogPost {
 }
 
 model BlogCategory {
-  id    String   @id @default(cuid())
-  name  String   @unique
-  slug  String   @unique
+  id   String   @id @default(cuid())
+  name String   @unique
+  slug String   @unique
   posts BlogPost[]
 }
 
 model Tag {
-  id       String      @id @default(cuid())
-  name     String      @unique
-  slug     String      @unique
+  id       String     @id @default(cuid())
+  name     String     @unique
+  slug     String     @unique
   projects ProjectTag[]
   posts    PostTag[]
 }
 
 model ProjectTag {
-  project   Project @relation(fields: [projectId], references: [id])
   projectId String
-  tag       Tag     @relation(fields: [tagId], references: [id])
   tagId     String
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([projectId, tagId])
 }
 
 model PostTag {
-  post   BlogPost @relation(fields: [postId], references: [id])
   postId String
-  tag    Tag      @relation(fields: [tagId], references: [id])
   tagId  String
+
+  post BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([postId, tagId])
 }
@@ -241,27 +246,29 @@ model Testimonial {
   rating    Int      @default(5)
   featured  Boolean  @default(false)
   approved  Boolean  @default(false)
-  project   Project? @relation(fields: [projectId], references: [id])
   projectId String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 }
 
 model CaseStudy {
-  id        String  @id @default(cuid())
-  project   Project @relation(fields: [projectId], references: [id])
-  projectId String  @unique
+  id        String   @id @default(cuid())
+  projectId String   @unique
   heroImage String?
-  overview  String  @db.Text
-  challenge String  @db.Text
-  process   String  @db.Text
-  solution  String  @db.Text
-  outcome   String  @db.Text
+  overview  String   @db.Text
+  challenge String   @db.Text
+  process   String   @db.Text
+  solution  String   @db.Text
+  outcome   String   @db.Text
   metrics   Json?
   timeline  Json?
-  published Boolean @default(false)
+  published Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Contact {
@@ -278,29 +285,33 @@ model Contact {
   ipAddress   String?
   userAgent   String?
   managerId   String?
-  manager     User?         @relation("AssignedManager", fields: [managerId], references: [id])
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
+  manager      User?         @relation("AssignedManager", fields: [managerId], references: [id], onDelete: SetNull)
   notes        ContactNote[]
   emailHistory EmailRecord[]
+
+  @@index([status])
 }
 
 model ContactNote {
   id        String   @id @default(cuid())
-  contact   Contact  @relation(fields: [contactId], references: [id])
   contactId String
   content   String   @db.Text
   createdAt DateTime @default(now())
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
 }
 
 model EmailRecord {
   id        String   @id @default(cuid())
-  contact   Contact  @relation(fields: [contactId], references: [id])
   contactId String
   subject   String
   body      String   @db.Text
   sentAt    DateTime @default(now())
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
 }
 
 model Service {
@@ -335,11 +346,11 @@ model PageView {
 }
 
 model AnalyticsEvent {
-  id        String   @id @default(cuid())
-  event     String
+  id         String   @id @default(cuid())
+  event      String
   properties Json?
-  sessionId String?
-  createdAt DateTime @default(now())
+  sessionId  String?
+  createdAt  DateTime @default(now())
 
   @@index([event])
   @@index([createdAt])
@@ -357,10 +368,11 @@ model SeoMeta {
   canonical     String?
   projectId     String?  @unique
   blogPostId    String?  @unique
-  project       Project? @relation(fields: [projectId], references: [id])
-  blogPost      BlogPost? @relation(fields: [blogPostId], references: [id])
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  project  Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  blogPost BlogPost? @relation(fields: [blogPostId], references: [id], onDelete: SetNull)
 }
 
 model Newsletter {
@@ -389,8 +401,9 @@ model AuditLog {
   entityId  String?
   changes   Json?
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([entity])

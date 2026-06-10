@@ -1,21 +1,22 @@
 import { prisma } from "@/lib/db";
-import { hash } from "bcryptjs";
+import bcrypt from "bcryptjs";
 
 async function main() {
   const email = process.env.SEED_ADMIN_EMAIL ?? "admin@example.com";
-  const password = process.env.SEED_ADMIN_PASSWORD ?? "admin12345";
+  const password = process.env.SEED_ADMIN_PASSWORD ?? "ChangeMe123!";
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (!existing) {
-    await prisma.user.create({
-      data: {
-        email,
-        name: "Admin",
-        role: "ADMIN",
-        hashedPassword: await hash(password, 12),
-      },
-    });
-  }
+  const hashedPassword = await bcrypt.hash(password, 12);
+
+  await prisma.user.upsert({
+    where: { email },
+    update: { hashedPassword, role: "ADMIN" },
+    create: {
+      email,
+      name: "Admin",
+      hashedPassword,
+      role: "ADMIN"
+    }
+  });
 }
 
 main()

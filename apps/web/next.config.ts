@@ -1,15 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  reactStrictMode: true,
   experimental: {
-    typedRoutes: true,
-  },
-  images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "utfs.io" },
-      { protocol: "https", hostname: "uploadthing.com" }
-    ],
-  },
+    typedRoutes: true
+  }
 };
 
 export default nextConfig;
