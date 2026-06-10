@@ -1,28 +1,22 @@
-import { prisma } from "@/lib/db";
 import Link from "next/link";
-import { Navigation } from "@/components/shared/Navigation";
-import { Footer } from "@/components/shared/Footer";
+import { prisma } from "@/lib/db";
 
 export default async function BlogPage() {
-  const posts = await prisma.blogPost.findMany({ where: { status: "PUBLISHED" }, orderBy: { publishedAt: "desc" } });
+  const posts = await prisma.blogPost.findMany({ where: { status: "PUBLISHED" }, orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }] });
 
   return (
-    <div className="min-h-screen">
-      <Navigation />
-      <main className="px-6">
-        <section className="mx-auto max-w-6xl py-16">
-          <h1 className="text-4xl font-bold">Blog</h1>
-          <div className="mt-8 grid gap-4">
-            {posts.map((p) => (
-              <Link key={p.id} href={`/blog/${p.slug}`} className="rounded-xl border border-border bg-card p-5 hover:bg-card/80">
-                <div className="text-lg font-semibold">{p.title}</div>
-                {p.excerpt ? <div className="mt-2 text-sm text-muted-foreground">{p.excerpt}</div> : null}
-              </Link>
-            ))}
-          </div>
-        </section>
-      </main>
-      <Footer />
-    </div>
+    <main className="min-h-dvh px-6 py-16">
+      <div className="mx-auto max-w-5xl">
+        <h1 className="text-3xl font-semibold tracking-tight">Blog</h1>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {posts.map((p) => (
+            <Link key={p.id} href={`/blog/${p.slug}`} className="rounded-xl border border-white/10 bg-surface-01 p-5 hover:border-white/20">
+              <div className="text-lg font-semibold">{p.title}</div>
+              {p.excerpt ? <p className="mt-2 text-sm text-white/60 line-clamp-2">{p.excerpt}</p> : null}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </main>
   );
 }
