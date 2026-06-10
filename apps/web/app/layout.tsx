@@ -12,11 +12,7 @@ export const metadata: Metadata = {
   description: "Enterprise portfolio platform"
 };
 
-export default function RootLayout({
-  children
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="uz" className={inter.variable}>
       <body>{children}</body>

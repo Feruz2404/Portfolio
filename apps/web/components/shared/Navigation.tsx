@@ -1,24 +1,44 @@
-import Link from "next/link";
+"use client";
 
-export function Navigation() {
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+
+export default function Navigation() {
+  const t = useTranslations("nav");
+  const pathname = usePathname();
+
+  const links = [
+    { href: "/about", label: t("about") },
+    { href: "/projects", label: t("projects") },
+    { href: "/team", label: t("team") },
+    { href: "/services", label: t("services") },
+    { href: "/blog", label: t("blog") },
+    { href: "/contact", label: t("contact") }
+  ];
+
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-white/10 bg-surface-00/70 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="font-[var(--font-syne)] text-lg font-extrabold">
-          dev<span className="text-brand-violet">.</span>
+        <Link href="/" className="text-sm font-semibold tracking-tight">
+          dev<span className="text-brand-pink">.</span>
         </Link>
-        <nav className="hidden gap-6 md:flex">
-          <Link className="text-sm text-muted-foreground hover:text-foreground" href="/about">About</Link>
-          <Link className="text-sm text-muted-foreground hover:text-foreground" href="/projects">Projects</Link>
-          <Link className="text-sm text-muted-foreground hover:text-foreground" href="/team">Team</Link>
-          <Link className="text-sm text-muted-foreground hover:text-foreground" href="/blog">Blog</Link>
-          <Link className="text-sm text-muted-foreground hover:text-foreground" href="/contact">Contact</Link>
+        <nav className="hidden items-center gap-6 md:flex">
+          {links.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={
+                "text-xs font-medium uppercase tracking-wider " +
+                (pathname?.startsWith(l.href) ? "text-white" : "text-white/60 hover:text-white")
+              }
+            >
+              {l.label}
+            </Link>
+          ))}
         </nav>
-        <Link
-          href="/contact"
-          className="rounded-md border border-border bg-secondary px-3 py-2 text-sm font-semibold hover:bg-secondary/80"
-        >
-          Aloqa →
+        <Link href="/admin/dashboard" className="text-xs text-white/60 hover:text-white">
+          Admin
         </Link>
       </div>
     </header>
