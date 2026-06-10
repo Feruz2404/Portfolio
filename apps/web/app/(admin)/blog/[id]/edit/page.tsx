@@ -1,0 +1,15 @@
+import { notFound } from "next/navigation";
+import { prisma } from "@/lib/db";
+import BlogPostForm from "@/components/admin/blog/BlogPostForm";
+
+export default async function EditBlogPostPage({ params }: { params: { id: string } }) {
+  const post = await prisma.blogPost.findUnique({ where: { id: params.id } });
+  if (!post) return notFound();
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-semibold tracking-tight">Edit Blog Post</h1>
+      <BlogPostForm mode="edit" post={post} />
+    </div>
+  );
+}
