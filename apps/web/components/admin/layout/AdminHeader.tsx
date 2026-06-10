@@ -1,18 +1,15 @@
-import { signOut } from "@/lib/auth";
+import Link from "next/link";
 
-export function AdminHeader() {
-  async function logout() {
-    "use server";
-    await signOut({ redirectTo: "/" });
-  }
-
+export default function AdminHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
+    <header className="sticky top-0 z-10 border-b border-white/10 bg-surface-00/80 backdrop-blur">
       <div className="flex items-center justify-between px-6 py-4">
-        <div className="text-sm text-muted-foreground">Enterprise Portfolio Admin</div>
-        <form action={logout}>
-          <button className="rounded-md border border-border bg-secondary px-3 py-2 text-sm font-semibold hover:bg-secondary/80">Logout</button>
-        </form>
+        <div className="text-sm text-white/70">Enterprise Portfolio Platform</div>
+        <div className="flex items-center gap-3">
+          <Link href="/" className="text-sm text-white/70 hover:text-white">
+            View site
+          </Link>
+        </div>
       </div>
     </header>
   );
