@@ -56,5 +56,6 @@ export const authOptions: NextAuthConfig = {
   pages: {
     signIn: "/admin/login",
     error: "/admin/unauthorized"
-  }
+  },
+  secret: process.env.NEXTAUTH_SECRET || 'change-me-in-production',
 };

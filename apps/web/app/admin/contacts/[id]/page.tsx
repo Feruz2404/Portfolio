@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 
-export default async function AdminContactDetailPage({ params }: { params: { id: string } }) {
-  const contact = await prisma.contact.findUnique({ where: { id: params.id }, include: { notes: true, emailHistory: true } });
+export default async function AdminContactDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const contact = await prisma.contact.findUnique({ where: { id }, include: { notes: true, emailHistory: true } });
   if (!contact) return notFound();
 
   return (

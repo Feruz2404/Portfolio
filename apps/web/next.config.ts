@@ -1,10 +1,15 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./i18n.ts");
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  devIndicators: false,
+  allowedDevOrigins: ['192.168.20.244'],
   experimental: {
     typedRoutes: true
   }
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

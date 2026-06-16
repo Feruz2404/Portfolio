@@ -1,14 +1,15 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import type { Route } from "next";
+import NextLink from "next/link";
 import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/lib/i18n/navigation";
 
 export default function Navigation() {
   const t = useTranslations("nav");
   const pathname = usePathname();
 
-  const links = [
+  const links: Array<{ href: string; label: string }> = [
     { href: "/about", label: t("about") },
     { href: "/projects", label: t("projects") },
     { href: "/team", label: t("team") },
@@ -37,9 +38,9 @@ export default function Navigation() {
             </Link>
           ))}
         </nav>
-        <Link href="/admin/dashboard" className="text-xs text-white/60 hover:text-white">
+        <NextLink href={"/admin/dashboard" as Route} className="text-xs text-white/60 hover:text-white">
           Admin
-        </Link>
+        </NextLink>
       </div>
     </header>
   );

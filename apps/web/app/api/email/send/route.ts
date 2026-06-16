@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { resend, FROM_EMAIL } from "@/lib/email";
+import { FROM_EMAIL, getResend } from "@/lib/email";
 import { auth } from "@/lib/server-auth";
 
 const schema = z.object({
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
-  const result = await resend.emails.send({
+  const result = await getResend().emails.send({
     from: FROM_EMAIL,
     to: parsed.data.to,
     subject: parsed.data.subject,

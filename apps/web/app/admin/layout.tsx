@@ -4,12 +4,20 @@ import { Role } from "@prisma/client";
 import AdminSidebar from "@/components/admin/layout/AdminSidebar";
 import AdminHeader from "@/components/admin/layout/AdminHeader";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
-  if (!session?.user) redirect("/login");
+  const user = session?.user;
 
-  const role = (session.user as any).role as Role | undefined;
-  if (!role) redirect("/unauthorized");
+  if (!user) {
+    redirect("/admin/login");
+  }
+
+  const role = (user as any).role as Role | undefined;
+  if (!role) {
+    redirect("/admin/unauthorized");
+  }
 
   return (
     <div className="min-h-dvh bg-surface-00">

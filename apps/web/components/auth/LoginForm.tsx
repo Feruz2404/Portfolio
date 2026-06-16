@@ -1,9 +1,12 @@
 "use client";
 
 import { signIn } from "next-auth/react";
+import type { Route } from "next";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function LoginForm() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,12 +25,16 @@ export default function LoginForm() {
         const res = await signIn("credentials", {
           email,
           password,
-          redirect: true,
+          redirect: false,
           callbackUrl: "/admin/dashboard"
         });
 
-        // next-auth will redirect; if it doesn't, show error
-        if (res?.error) setError("Invalid credentials");
+        if (res?.error) {
+          setError("Invalid credentials");
+        } else {
+          router.push("/admin/dashboard" as Route);
+          router.refresh();
+        }
         setLoading(false);
       }}
     >

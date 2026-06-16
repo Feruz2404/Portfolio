@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 import { prisma } from "@/lib/db";
 
 export default async function AdminContactsPage() {
@@ -21,7 +22,7 @@ export default async function AdminContactsPage() {
             {contacts.map((c) => (
               <tr key={c.id} className="border-t border-white/10">
                 <td className="px-4 py-3">
-                  <Link href={`/admin/contacts/${c.id}`} className="hover:underline">
+                  <Link href={`/admin/contacts/${c.id}` as Route} className="hover:underline">
                     {c.name}
                   </Link>
                 </td>

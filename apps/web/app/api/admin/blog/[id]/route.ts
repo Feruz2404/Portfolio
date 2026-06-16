@@ -25,16 +25,17 @@ async function requireWrite() {
   return { session, role };
 }
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const gate = await requireWrite();
   if (gate.error) return gate.error;
 
-  const post = await prisma.blogPost.findUnique({ where: { id: params.id } });
+  const { id } = await params;
+  const post = await prisma.blogPost.findUnique({ where: { id } });
   if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ post });
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const gate = await requireWrite();
   if (gate.error) return gate.error;
 
@@ -42,8 +43,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
+  const { id } = await params;
   const post = await prisma.blogPost.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       ...parsed.data,
       publishedAt: parsed.data.publishedAt ? new Date(parsed.data.publishedAt) : parsed.data.publishedAt === null ? null : undefined
@@ -52,10 +54,11 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   return NextResponse.json({ post });
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const gate = await requireWrite();
   if (gate.error) return gate.error;
 
-  await prisma.blogPost.delete({ where: { id: params.id } });
+  const { id } = await params;
+  await prisma.blogPost.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }

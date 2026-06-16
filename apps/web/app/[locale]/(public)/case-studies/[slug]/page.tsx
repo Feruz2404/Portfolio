@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 
-export default async function CaseStudyDetailPage({ params }: { params: { slug: string } }) {
-  const project = await prisma.project.findUnique({ where: { slug: params.slug } });
+export default async function CaseStudyDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const project = await prisma.project.findUnique({ where: { slug } });
   if (!project) return notFound();
 
   const study = await prisma.caseStudy.findUnique({ where: { projectId: project.id } });

@@ -1,4 +1,4 @@
-import { createNextRouteHandler } from "uploadthing/next";
+import { createRouteHandler } from "uploadthing/next";
 import { uploadRouter } from "@/lib/upload";
 
-export const { GET, POST } = createNextRouteHandler({ router: uploadRouter });
+export const { GET, POST } = createRouteHandler({ router: uploadRouter });

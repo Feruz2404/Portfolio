@@ -6,5 +6,28 @@
     "services": "Xizmatlar",
     "blog": "Blog",
     "contact": "Aloqa"
+  },
+  "hero": {
+    "available": "Ushbu loyihalar uchun mavjud",
+    "heading1": "Quramiz",
+    "heading2": "Raqamli",
+    "heading3": "Tajribalarni",
+    "subtitle": "Biz yuqori samarali veb-ilovalar, immersive raqamli mahsulotlar va kengaytiriladigan tizimlarni yaratamiz.",
+    "viewProjects": "Loyihalarni ko'rish",
+    "contactUs": "Bog'lanish",
+    "scroll": "Pastga"
+  },
+  "home": {
+    "s_projects": "Loyihalar",
+    "s_experience": "Yil tajriba",
+    "s_languages": "Til",
+    "featuredProjects": "Muhim loyihalar",
+    "services": "Xizmatlarimiz",
+    "team": "Bizning jamoa",
+    "ctaTitle": "Ajoyib narsa qurishga tayyormisiz?",
+    "ctaSubtitle": "G'oyangizni baham ko'ring va uni odamlar yaxshi ko'radigan mahsulotga aylantiramiz.",
+    "emailPlaceholder": "Emailingizni kiriting",
+    "getInTouch": "Bog'lanish",
+    "ctaNote": "Spam yo'q. 24 soat ichida javob beramiz."
   }
 }

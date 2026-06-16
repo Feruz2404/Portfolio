@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/server-auth";
 import { hasPermission } from "@/lib/rbac";
 import type { Role } from "@prisma/client";
 

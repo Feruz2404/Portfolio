@@ -6,5 +6,28 @@
     "services": "Services",
     "blog": "Blog",
     "contact": "Contact"
+  },
+  "hero": {
+    "available": "Available for projects",
+    "heading1": "Building",
+    "heading2": "Digital",
+    "heading3": "Experiences",
+    "subtitle": "We craft high-performance web applications, immersive digital products, and scalable systems that drive real business growth.",
+    "viewProjects": "View Projects",
+    "contactUs": "Contact Us",
+    "scroll": "Scroll"
+  },
+  "home": {
+    "s_projects": "Projects Delivered",
+    "s_experience": "Years Experience",
+    "s_languages": "Languages Spoken",
+    "featuredProjects": "Featured Projects",
+    "services": "What We Do",
+    "team": "The Team",
+    "ctaTitle": "Ready to build something amazing?",
+    "ctaSubtitle": "Share your idea and let's turn it into a product people love.",
+    "emailPlaceholder": "Enter your email",
+    "getInTouch": "Get in Touch",
+    "ctaNote": "No spam. We reply within 24 hours."
   }
 }

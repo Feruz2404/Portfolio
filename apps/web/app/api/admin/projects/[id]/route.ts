@@ -27,19 +27,20 @@ async function requireWrite() {
   return { session, role };
 }
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const gate = await requireWrite();
   if (gate.error) return gate.error;
 
+  const { id } = await params;
   const project = await prisma.project.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { teamMembers: { include: { member: true } } }
   });
   if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ project });
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const gate = await requireWrite();
   if (gate.error) return gate.error;
 
@@ -47,14 +48,16 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   const parsed = updateSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
-  const project = await prisma.project.update({ where: { id: params.id }, data: parsed.data });
+  const { id } = await params;
+  const project = await prisma.project.update({ where: { id }, data: parsed.data });
   return NextResponse.json({ project });
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const gate = await requireWrite();
   if (gate.error) return gate.error;
 
-  await prisma.project.delete({ where: { id: params.id } });
+  const { id } = await params;
+  await prisma.project.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }
