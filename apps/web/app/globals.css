@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-* { cursor: none !important; } /* Ensure cursor is hidden everywhere */
+* { cursor: none !important; }
 
 :root {
   --accent: #6366f1;
@@ -17,14 +17,14 @@ html { scroll-behavior: smooth; }
 body {
   background: #000;
   color: #fff;
-  font-family: var(--font-sans);
+  font-family: var(--font-inter);
   overflow-x: hidden;
   cursor: none;
 }
 
 .cursor-dot {
   width: 8px; height: 8px;
-  opacity: 1; /* Ensure dot is always visible */
+  opacity: 1;
   background: #6366f1;
   border-radius: 50%;
   position: fixed;
@@ -53,6 +53,14 @@ body {
   background: rgba(255,255,255,0.03);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.08);
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 25s linear infinite;
 }
 
 ::-webkit-scrollbar { width: 4px; }

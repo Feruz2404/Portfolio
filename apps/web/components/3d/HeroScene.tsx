@@ -11,7 +11,7 @@ function Particles() {
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3)
     for (let i = 0; i < count; i++) {
-      arr[i * 3] = (Math.random() - 0.5) * 20
+      arr[i * 3]     = (Math.random() - 0.5) * 20
       arr[i * 3 + 1] = (Math.random() - 0.5) * 20
       arr[i * 3 + 2] = (Math.random() - 0.5) * 20
     }
@@ -27,10 +27,12 @@ function Particles() {
 
   return (
     <points ref={mesh}>
-      <bufferGeometry>
-        <bufferGeometry ref={geom => { if (geom) geom.setAttribute('position', new THREE.BufferAttribute(positions, 3)); }}>
-      </bufferGeometry>
-      </bufferGeometry>
+      {/* FIX: single bufferGeometry with ref – removes broken nested geometry */}
+      <bufferGeometry
+        ref={(geom) => {
+          if (geom) geom.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+        }}
+      />
       <pointsMaterial size={0.02} color="#6366f1" transparent opacity={0.6} sizeAttenuation />
     </points>
   )
@@ -38,16 +40,18 @@ function Particles() {
 
 type ShapeType = 'ico' | 'torus' | 'sphere'
 
-function FloatingShape({ position, color, shape }: { position: [number,number,number], color: string, shape: ShapeType }) {
+function FloatingShape({ position, color, shape }: { position: [number,number,number]; color: string; shape: ShapeType }) {
   const mesh = useRef<THREE.Mesh>(null)
-  useFrame((state) => { if (mesh.current) mesh.current.rotation.y = state.clock.elapsedTime * 0.3 })
+  useFrame((state) => {
+    if (mesh.current) mesh.current.rotation.y = state.clock.elapsedTime * 0.3
+  })
 
   return (
     <Float speed={1.5} rotationIntensity={0.5} floatIntensity={1}>
       <mesh ref={mesh} position={position}>
-        {shape === 'ico' && <icosahedronGeometry args={[0.8, 0]} />}
-        {shape === 'torus' && <torusGeometry args={[0.6, 0.2, 16, 100]} />}
-        {shape === 'sphere' && <sphereGeometry args={[0.6, 32, 32]} />}
+        {shape === 'ico'   && <icosahedronGeometry args={[0.8, 0]} />}
+        {shape === 'torus' && <torusGeometry      args={[0.6, 0.2, 16, 100]} />}
+        {shape === 'sphere'&& <sphereGeometry     args={[0.6, 32, 32]} />}
         <meshStandardMaterial color={color} wireframe opacity={0.7} transparent />
       </mesh>
     </Float>
@@ -68,10 +72,10 @@ function Scene() {
   return (
     <group ref={group}>
       <ambientLight intensity={0.3} />
-      <pointLight position={[5, 5, 5]} color="#6366f1" intensity={2} />
+      <pointLight position={[5, 5, 5]}   color="#6366f1" intensity={2} />
       <pointLight position={[-5, -5, -5]} color="#8b5cf6" intensity={1} />
-      <FloatingShape position={[2, 0, 0]} color="#6366f1" shape="ico" />
-      <FloatingShape position={[-2, 1, -1]} color="#8b5cf6" shape="torus" />
+      <FloatingShape position={[2, 0, 0]}    color="#6366f1" shape="ico"    />
+      <FloatingShape position={[-2, 1, -1]}  color="#8b5cf6" shape="torus"  />
       <FloatingShape position={[0, -1.5, 1]} color="#06b6d4" shape="sphere" />
       <Particles />
       <Stars radius={50} depth={50} count={3000} factor={2} fade speed={0.5} />

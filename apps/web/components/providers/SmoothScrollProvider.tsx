@@ -11,11 +11,19 @@ export default function SmoothScrollProvider({ children }: { children: React.Rea
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
     })
-    lenisRef.current = lenis
-
+    lenisRef.current  = lenis
     ;(window as any).lenis = lenis
 
+    // FIX: Lenis requires a RAF tick to actually run smooth scroll
+    let rafId: number
+    function raf(time: number) {
+      lenis.raf(time)
+      rafId = requestAnimationFrame(raf)
+    }
+    rafId = requestAnimationFrame(raf)
+
     return () => {
+      cancelAnimationFrame(rafId)
       lenis.destroy()
       delete (window as any).lenis
     }
