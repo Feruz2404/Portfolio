@@ -4,8 +4,8 @@ import { useState } from "react";
 
 export default function ContactForm() {
   const [loading, setLoading] = useState(false);
-  const [ok, setOk] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [ok,      setOk     ] = useState(false);
+  const [error,   setError  ] = useState<string | null>(null);
 
   return (
     <form
@@ -16,56 +16,55 @@ export default function ContactForm() {
         setOk(false);
         setLoading(true);
 
-        const fd = new FormData(e.currentTarget);
+        const fd      = new FormData(e.currentTarget);
         const payload = Object.fromEntries(fd.entries());
 
         const res = await fetch("/api/contacts", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         });
 
-        if (!res.ok) {
-          setError("Failed to send");
-          setLoading(false);
-          return;
-        }
-
+        if (!res.ok) { setError("Failed to send"); setLoading(false); return; }
         setOk(true);
         setLoading(false);
         (e.currentTarget as HTMLFormElement).reset();
       }}
     >
-      <Field label="Name">
-        <input name="name" required className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
+      <Field label="Name" htmlFor="cf-name">
+        <input id="cf-name" name="name" required className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
       </Field>
-      <Field label="Email">
-        <input name="email" type="email" required className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
+      <Field label="Email" htmlFor="cf-email">
+        <input id="cf-email" name="email" type="email" required className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
       </Field>
-      <Field label="Company">
-        <input name="company" className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
+      <Field label="Company" htmlFor="cf-company">
+        <input id="cf-company" name="company" className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
       </Field>
-      <Field label="Phone">
-        <input name="phone" className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
+      <Field label="Phone" htmlFor="cf-phone">
+        <input id="cf-phone" name="phone" className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
       </Field>
-      <Field label="Message">
-        <textarea name="message" required rows={5} className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
+      <Field label="Message" htmlFor="cf-message">
+        <textarea id="cf-message" name="message" required rows={5} className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
       </Field>
 
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
-      {ok ? <p className="text-sm text-green-400">Sent</p> : null}
+      {ok    ? <p className="text-sm text-green-400">Message sent! We&apos;ll reply within 24 hours.</p> : null}
 
-      <button disabled={loading} className="rounded-md bg-brand-violet px-4 py-2 text-sm font-semibold disabled:opacity-60">
-        {loading ? "Sending..." : "Send"}
+      <button
+        type="submit"
+        disabled={loading}
+        className="rounded-md bg-brand-violet px-4 py-2 text-sm font-semibold disabled:opacity-60"
+      >
+        {loading ? "Sending..." : "Send message"}
       </button>
     </form>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <div className="text-sm text-white/70">{label}</div>
+      <label htmlFor={htmlFor} className="text-sm text-white/70">{label}</label>
       {children}
     </div>
   );

@@ -6,10 +6,13 @@ const withNextIntl = createNextIntlPlugin("./i18n.ts");
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   devIndicators: false,
-  allowedDevOrigins: ['192.168.20.244'],
+  // FIX: removed hardcoded '192.168.20.244' – use env var if needed
+  ...(process.env.ALLOWED_DEV_ORIGINS
+    ? { allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS.split(",") }
+    : {}),
   experimental: {
-    typedRoutes: true
-  }
+    typedRoutes: true,
+  },
 };
 
 export default withNextIntl(nextConfig);
