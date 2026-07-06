@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/db";
+import { requireAdminPage } from "@/lib/adminAuth";
 
 export default async function AdminTestimonialsPage() {
+  await requireAdminPage("testimonials:write");
+
   const testimonials = await prisma.testimonial.findMany({ orderBy: { updatedAt: "desc" } });
 
   return (

@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { requireAdminPage } from "@/lib/adminAuth";
 import TeamMemberForm from "@/components/admin/team/TeamMemberForm";
 
 export default async function EditTeamMemberPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireAdminPage("team:write");
+
   const { id } = await params;
   const member = await prisma.teamMember.findUnique({ where: { id } });
   if (!member) return notFound();

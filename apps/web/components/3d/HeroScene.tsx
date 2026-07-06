@@ -1,58 +1,77 @@
 'use client'
-import { useRef, useMemo } from 'react'
+
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { AdaptiveDpr, Float } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Float, Stars } from '@react-three/drei'
 import * as THREE from 'three'
 
 function Particles() {
   const mesh = useRef<THREE.Points>(null)
-  const count = 2000
+  const count = 900
 
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3)
     for (let i = 0; i < count; i++) {
-      arr[i * 3]     = (Math.random() - 0.5) * 20
-      arr[i * 3 + 1] = (Math.random() - 0.5) * 20
-      arr[i * 3 + 2] = (Math.random() - 0.5) * 20
+      const radius = 4 + Math.random() * 6
+      const angle = Math.random() * Math.PI * 2
+      const depth = (Math.random() - 0.5) * 8
+
+      arr[i * 3] = Math.cos(angle) * radius
+      arr[i * 3 + 1] = (Math.random() - 0.5) * 6
+      arr[i * 3 + 2] = Math.sin(angle) * radius + depth
     }
     return arr
   }, [])
 
   useFrame((state) => {
-    if (mesh.current) {
-      mesh.current.rotation.y = state.clock.elapsedTime * 0.03
-      mesh.current.rotation.x = state.clock.elapsedTime * 0.01
-    }
+    if (!mesh.current) return
+    mesh.current.rotation.y = state.clock.elapsedTime * 0.025
+    mesh.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.18) * 0.04
   })
 
   return (
     <points ref={mesh}>
-      {/* FIX: single bufferGeometry with ref – removes broken nested geometry */}
-      <bufferGeometry
-        ref={(geom) => {
-          if (geom) geom.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-        }}
-      />
-      <pointsMaterial size={0.02} color="#6366f1" transparent opacity={0.6} sizeAttenuation />
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <pointsMaterial size={0.018} color="#8aa7ff" transparent opacity={0.62} sizeAttenuation />
     </points>
   )
 }
 
 type ShapeType = 'ico' | 'torus' | 'sphere'
 
-function FloatingShape({ position, color, shape }: { position: [number,number,number]; color: string; shape: ShapeType }) {
+function FloatingShape({
+  position,
+  color,
+  shape
+}: {
+  position: [number, number, number]
+  color: string
+  shape: ShapeType
+}) {
   const mesh = useRef<THREE.Mesh>(null)
-  useFrame((state) => {
-    if (mesh.current) mesh.current.rotation.y = state.clock.elapsedTime * 0.3
+
+  useFrame((_state, delta) => {
+    if (!mesh.current) return
+    mesh.current.rotation.y += delta * 0.22
+    mesh.current.rotation.x += delta * 0.08
   })
 
   return (
-    <Float speed={1.5} rotationIntensity={0.5} floatIntensity={1}>
+    <Float speed={1.1} rotationIntensity={0.35} floatIntensity={0.7}>
       <mesh ref={mesh} position={position}>
-        {shape === 'ico'   && <icosahedronGeometry args={[0.8, 0]} />}
-        {shape === 'torus' && <torusGeometry      args={[0.6, 0.2, 16, 100]} />}
-        {shape === 'sphere'&& <sphereGeometry     args={[0.6, 32, 32]} />}
-        <meshStandardMaterial color={color} wireframe opacity={0.7} transparent />
+        {shape === 'ico' && <icosahedronGeometry args={[0.8, 0]} />}
+        {shape === 'torus' && <torusGeometry args={[0.6, 0.2, 16, 96]} />}
+        {shape === 'sphere' && <sphereGeometry args={[0.6, 28, 28]} />}
+        <meshStandardMaterial
+          color={color}
+          wireframe
+          opacity={0.56}
+          transparent
+          roughness={0.4}
+          metalness={0.35}
+        />
       </mesh>
     </Float>
   )
@@ -63,34 +82,48 @@ function Scene() {
   const group = useRef<THREE.Group>(null)
 
   useFrame(() => {
-    if (group.current) {
-      group.current.rotation.y += (mouse.x * 0.3 - group.current.rotation.y) * 0.05
-      group.current.rotation.x += (-mouse.y * 0.2 - group.current.rotation.x) * 0.05
-    }
+    if (!group.current) return
+    group.current.rotation.y += (mouse.x * 0.26 - group.current.rotation.y) * 0.04
+    group.current.rotation.x += (-mouse.y * 0.16 - group.current.rotation.x) * 0.04
   })
 
   return (
     <group ref={group}>
-      <ambientLight intensity={0.3} />
-      <pointLight position={[5, 5, 5]}   color="#6366f1" intensity={2} />
-      <pointLight position={[-5, -5, -5]} color="#8b5cf6" intensity={1} />
-      <FloatingShape position={[2, 0, 0]}    color="#6366f1" shape="ico"    />
-      <FloatingShape position={[-2, 1, -1]}  color="#8b5cf6" shape="torus"  />
-      <FloatingShape position={[0, -1.5, 1]} color="#06b6d4" shape="sphere" />
+      <ambientLight intensity={0.28} />
+      <pointLight position={[5, 5, 5]} color="#7c8cff" intensity={1.6} />
+      <pointLight position={[-5, -5, -5]} color="#18d5d0" intensity={0.75} />
+      <FloatingShape position={[2.2, 0.1, 0]} color="#7c8cff" shape="ico" />
+      <FloatingShape position={[-2.1, 1, -1.1]} color="#a78bfa" shape="torus" />
+      <FloatingShape position={[0.1, -1.45, 1]} color="#18d5d0" shape="sphere" />
       <Particles />
-      <Stars radius={50} depth={50} count={3000} factor={2} fade speed={0.5} />
     </group>
   )
 }
 
 export default function HeroScene() {
-  const isLowEnd = typeof navigator !== 'undefined' && (navigator.hardwareConcurrency || 4) < 4
-  if (isLowEnd) return (
-    <div className="w-full h-full bg-gradient-to-br from-indigo-900/20 via-purple-900/20 to-cyan-900/20 rounded-full blur-3xl animate-pulse" />
-  )
+  const [fallback, setFallback] = useState(true)
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const coarsePointer = window.matchMedia('(pointer: coarse)').matches
+    const lowCoreCount = (navigator.hardwareConcurrency || 4) < 4
+    setFallback(reducedMotion || coarsePointer || lowCoreCount)
+  }, [])
+
+  if (fallback) {
+    return (
+      <div className="h-full w-full rounded-full bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.28),rgba(6,182,212,0.12)_38%,transparent_68%)] blur-3xl" />
+    )
+  }
 
   return (
-    <Canvas camera={{ position: [0, 0, 6], fov: 60 }} dpr={[1, 1.5]} gl={{ antialias: false }}>
+    <Canvas
+      camera={{ position: [0, 0, 6], fov: 58 }}
+      dpr={[1, 1.25]}
+      gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
+      performance={{ min: 0.6 }}
+    >
+      <AdaptiveDpr pixelated />
       <Scene />
     </Canvas>
   )

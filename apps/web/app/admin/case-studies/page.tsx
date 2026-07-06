@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/db";
+import { requireAdminPage } from "@/lib/adminAuth";
 
 export default async function AdminCaseStudiesPage() {
+  await requireAdminPage("projects:write");
+
   const studies = await prisma.caseStudy.findMany({ include: { project: true }, orderBy: { updatedAt: "desc" } });
 
   return (

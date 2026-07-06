@@ -1,8 +1,11 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { prisma } from "@/lib/db";
+import { requireAdminPage } from "@/lib/adminAuth";
 
 export default async function AdminTeamPage() {
+  await requireAdminPage("team:write");
+
   const team = await prisma.teamMember.findMany({ orderBy: [{ order: "asc" }, { updatedAt: "desc" }] });
 
   return (

@@ -1,6 +1,9 @@
+import { requireAdminPage } from "@/lib/adminAuth";
 import ProjectForm from "@/components/admin/projects/ProjectForm";
 
-export default function NewProjectPage() {
+export default async function NewProjectPage() {
+  await requireAdminPage("projects:write");
+
   return (
     <div className="space-y-6">
       <div>

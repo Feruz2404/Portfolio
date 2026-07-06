@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/db";
+import { requireAdminPage } from "@/lib/adminAuth";
 
 export default async function AdminMediaPage() {
+  await requireAdminPage("media:write");
+
   const media = await prisma.media.findMany({ orderBy: { createdAt: "desc" } });
 
   return (

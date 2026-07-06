@@ -46,6 +46,14 @@ export default function ContactForm() {
       <Field label="Message" htmlFor="cf-message">
         <textarea id="cf-message" name="message" required rows={5} className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
       </Field>
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        className="hidden"
+        aria-hidden="true"
+      />
 
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
       {ok    ? <p className="text-sm text-green-400">Message sent! We&apos;ll reply within 24 hours.</p> : null}

@@ -1,17 +1,24 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const withNextIntl = createNextIntlPlugin("./i18n.ts");
+const appDir = dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  typedRoutes: true,
   devIndicators: false,
-  // FIX: removed hardcoded '192.168.20.244' – use env var if needed
+  outputFileTracingRoot: join(appDir, "../.."),
   ...(process.env.ALLOWED_DEV_ORIGINS
     ? { allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS.split(",") }
     : {}),
-  experimental: {
-    typedRoutes: true,
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "**" },
+      { protocol: "http", hostname: "localhost" }
+    ]
   },
 };
 

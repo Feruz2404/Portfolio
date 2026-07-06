@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { getEnv } from "@/lib/env";
 
 export default async function TeamMemberPage({ params }: { params: Promise<{ slug: string }> }) {
+  if (!getEnv().DATABASE_URL) return notFound();
+
   const { slug } = await params;
   const member = await prisma.teamMember.findUnique({
     where: { slug },

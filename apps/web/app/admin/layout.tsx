@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/server-auth";
-import { Role } from "@prisma/client";
 import AdminSidebar from "@/components/admin/layout/AdminSidebar";
 import AdminHeader from "@/components/admin/layout/AdminHeader";
 
@@ -14,7 +13,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/admin/login");
   }
 
-  const role = (user as any).role as Role | undefined;
+  const role = user.role;
   if (!role) {
     redirect("/admin/unauthorized");
   }

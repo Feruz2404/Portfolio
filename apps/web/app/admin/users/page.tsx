@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/db";
+import { requireAdminPage } from "@/lib/adminAuth";
 
 export default async function AdminUsersPage() {
+  await requireAdminPage("users:write");
+
   const users = await prisma.user.findMany({ orderBy: { createdAt: "desc" }, select: { id: true, email: true, name: true, role: true, createdAt: true } });
 
   return (

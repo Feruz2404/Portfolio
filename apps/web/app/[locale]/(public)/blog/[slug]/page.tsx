@@ -1,7 +1,11 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { prisma } from "@/lib/db";
+import { getEnv } from "@/lib/env";
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  if (!getEnv().DATABASE_URL) return notFound();
+
   const { slug } = await params;
   const post = await prisma.blogPost.findUnique({ where: { slug } });
   if (!post || post.status !== "PUBLISHED") return notFound();
@@ -27,8 +31,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
         {/* Cover image */}
         {post.coverImage && (
-          <div className="mb-10 overflow-hidden rounded-xl">
-            <img src={post.coverImage} alt={post.title} className="w-full object-cover" />
+          <div className="relative mb-10 aspect-video overflow-hidden rounded-xl">
+            <Image src={post.coverImage} alt={post.title} fill sizes="(min-width: 768px) 768px, 100vw" className="object-cover" priority />
           </div>
         )}
 

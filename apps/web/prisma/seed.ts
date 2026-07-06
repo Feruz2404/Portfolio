@@ -31,7 +31,7 @@ async function main() {
   }
 
   // Team Members
-  const members = await Promise.all([
+  await Promise.all([
     prisma.teamMember.upsert({
       where: { slug: "alex-chen" },
       update: {},
@@ -257,7 +257,7 @@ async function main() {
   ]);
 
   // Services
-  const services = await Promise.all([
+  await Promise.all([
     prisma.service.upsert({
       where: { slug: "web-development" },
       update: {},
@@ -362,7 +362,7 @@ async function main() {
     throw new Error("Blog author not found. Ensure the admin seed runs first.");
   }
 
-  const blogPosts = await Promise.all([
+  await Promise.all([
     prisma.blogPost.upsert({
       where: { slug: "why-rust-for-web-backend" },
       update: {},
@@ -414,7 +414,7 @@ async function main() {
   ]);
 
   // Testimonials
-  const testimonials = await Promise.all([
+  await Promise.all([
     prisma.testimonial.upsert({
       where: { id: "test1" },
       update: {},

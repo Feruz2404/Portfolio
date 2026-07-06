@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/db";
+import { requireAdminPage } from "@/lib/adminAuth";
 
 export default async function AdminServicesPage() {
+  await requireAdminPage("services:write");
+
   const services = await prisma.service.findMany({ orderBy: [{ featured: "desc" }, { order: "asc" }] });
 
   return (

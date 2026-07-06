@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
+import { getAdminApiContext } from "@/lib/adminAuth";
+import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { auth } from "@/lib/server-auth";
-import { hasPermission } from "@/lib/rbac";
-import { Role } from "@prisma/client";
 import { z } from "zod";
 
 const updateSchema = z.object({
@@ -17,19 +16,9 @@ const updateSchema = z.object({
   featured: z.boolean().optional()
 });
 
-async function requireWrite() {
-  const session = await auth();
-  if (!session?.user) return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
-  const role = (session.user as any).role as Role;
-  if (!hasPermission(role, "projects:write") && role !== "ADMIN") {
-    return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
-  }
-  return { session, role };
-}
-
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireWrite();
-  if (gate.error) return gate.error;
+  const gate = await getAdminApiContext("projects:write");
+  if (!gate.ok) return gate.response;
 
   const { id } = await params;
   const project = await prisma.project.findUnique({
@@ -37,12 +26,13 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     include: { teamMembers: { include: { member: true } } }
   });
   if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
   return NextResponse.json({ project });
 }
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireWrite();
-  if (gate.error) return gate.error;
+  const gate = await getAdminApiContext("projects:write");
+  if (!gate.ok) return gate.response;
 
   const body = await req.json().catch(() => null);
   const parsed = updateSchema.safeParse(body);
@@ -50,14 +40,29 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
   const { id } = await params;
   const project = await prisma.project.update({ where: { id }, data: parsed.data });
+  await writeAuditLog({
+    action: "update",
+    entity: "Project",
+    entityId: project.id,
+    userId: gate.context.userId,
+    changes: parsed.data
+  });
+
   return NextResponse.json({ project });
 }
 
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireWrite();
-  if (gate.error) return gate.error;
+  const gate = await getAdminApiContext("projects:write");
+  if (!gate.ok) return gate.response;
 
   const { id } = await params;
   await prisma.project.delete({ where: { id } });
+  await writeAuditLog({
+    action: "delete",
+    entity: "Project",
+    entityId: id,
+    userId: gate.context.userId
+  });
+
   return NextResponse.json({ ok: true });
 }

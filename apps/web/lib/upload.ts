@@ -8,7 +8,7 @@ export const uploadRouter = {
     .middleware(async () => {
       const session = await auth();
       if (!session?.user) throw new Error("Unauthorized");
-      return { userId: (session.user as any).id };
+      return { userId: session.user.id };
     })
     .onUploadComplete(async ({ file }) => {
       return { url: file.url, key: file.key, name: file.name, size: file.size, type: file.type };

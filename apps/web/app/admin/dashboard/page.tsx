@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/db";
+import { requireAdminPage } from "@/lib/adminAuth";
 
 export default async function AdminDashboardPage() {
+  await requireAdminPage("analytics:read");
+
   const [projectsTotal, teamTotal, leadsTotal, postsTotal, pendingTestimonials] = await Promise.all([
     prisma.project.count(),
     prisma.teamMember.count(),

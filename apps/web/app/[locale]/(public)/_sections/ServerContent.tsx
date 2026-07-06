@@ -1,8 +1,12 @@
 // Server Component – framer-motion is NOT allowed here.
 // Animations removed; use CSS transitions instead.
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
+import Image from "next/image";
+import { getEnv } from "@/lib/env";
 
 async function FeaturedProjects() {
+  if (!getEnv().DATABASE_URL) return null;
+
   const { prisma } = await import("@/lib/db");
   const projects = await prisma.project.findMany({
     where: { featured: true },
@@ -16,9 +20,9 @@ async function FeaturedProjects() {
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
         {projects.map((p) => (
           <div key={p.id} className="group glass rounded-2xl overflow-hidden hover:scale-[1.03] transition-transform duration-300">
-            <div className="aspect-video overflow-hidden">
+            <div className="relative aspect-video overflow-hidden">
               {p.screenshots?.[0] ? (
-                <img src={p.screenshots[0]} alt={p.title ?? "Project"} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <Image src={p.screenshots[0]} alt={p.title ?? "Project"} fill sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-110" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-indigo-600/20 to-purple-600/20" />
               )}
@@ -34,7 +38,7 @@ async function FeaturedProjects() {
                   ))}
                 </div>
               )}
-              <Link href={`/projects/${p.slug}` as any} className="mt-4 inline-flex items-center text-sm font-medium text-indigo-400 group-hover:text-indigo-300 transition-colors">
+              <Link href={`/projects/${p.slug}`} className="mt-4 inline-flex items-center text-sm font-medium text-indigo-400 group-hover:text-indigo-300 transition-colors">
                 View Project <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
               </Link>
             </div>
@@ -46,6 +50,8 @@ async function FeaturedProjects() {
 }
 
 async function ServicesSection() {
+  if (!getEnv().DATABASE_URL) return null;
+
   const { prisma } = await import("@/lib/db");
   const services = await prisma.service.findMany({ where: { isActive: true }, take: 6, orderBy: { order: "asc" } });
   if (!services.length) return null;
@@ -72,6 +78,8 @@ async function ServicesSection() {
 }
 
 async function TeamPreview() {
+  if (!getEnv().DATABASE_URL) return null;
+
   const { prisma } = await import("@/lib/db");
   const team = await prisma.teamMember.findMany({
     where: { isActive: true },
@@ -88,9 +96,9 @@ async function TeamPreview() {
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {team.map((m) => (
           <div key={m.id} className="glass p-6 rounded-2xl text-center hover:-translate-y-1 transition-all duration-300 group">
-            <div className="mx-auto w-20 h-20 rounded-full overflow-hidden mb-4 ring-2 ring-indigo-500/20 group-hover:ring-indigo-500/50 transition-all">
+            <div className="relative mx-auto mb-4 h-20 w-20 overflow-hidden rounded-full ring-2 ring-indigo-500/20 transition-all group-hover:ring-indigo-500/50">
               {m.avatar ? (
-                <img src={m.avatar} alt={m.fullName ?? "Team member"} className="w-full h-full object-cover" />
+                <Image src={m.avatar} alt={m.fullName ?? "Team member"} fill sizes="80px" className="object-cover" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold">{initials(m.fullName)}</div>
               )}
@@ -122,6 +130,8 @@ async function TeamPreview() {
 }
 
 async function TestimonialsSection() {
+  if (!getEnv().DATABASE_URL) return null;
+
   const { prisma } = await import("@/lib/db");
   const testimonials = await prisma.testimonial.findMany({
     where: { approved: true },

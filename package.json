@@ -8,6 +8,10 @@
   "dependencies": {
     "autoprefixer": "^10.4.20"
   },
+  "overrides": {
+    "effect": "3.21.0",
+    "postcss": "8.5.16"
+  },
   "scripts": {
     "dev": "npm --workspace apps/web run dev",
     "build": "npm --workspace apps/web run build",

@@ -6,6 +6,12 @@ export default function CustomCursor() {
   const ringRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const canUseCustomCursor =
+      window.matchMedia('(pointer: fine)').matches &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    if (!canUseCustomCursor) return
+
     const dot  = dotRef.current
     const ring = ringRef.current
     if (!dot || !ring) return
@@ -20,7 +26,6 @@ export default function CustomCursor() {
       dot.style.top  = mouseY - 4 + 'px'
     }
 
-    // FIX: track RAF ID so we can cancel on unmount
     let rafId: number
     const animate = () => {
       ringX += (mouseX - ringX) * 0.15
@@ -31,29 +36,40 @@ export default function CustomCursor() {
     }
     rafId = requestAnimationFrame(animate)
 
+    document.body.classList.add('has-custom-cursor')
     const onEnter = () => { dot.style.transform = 'scale(3)' }
     const onLeave = () => { dot.style.transform = 'scale(1)' }
+    const onTextInputEnter = () => {
+      dot.style.opacity = '0'
+      ring.style.opacity = '0'
+    }
+    const onTextInputLeave = () => {
+      dot.style.opacity = '1'
+      ring.style.opacity = '1'
+    }
 
     document.addEventListener('mousemove', onMove)
 
     const bind = (el: HTMLElement) => {
       if (!el.dataset.cursorBound) {
-        el.addEventListener('mouseenter', onEnter)
-        el.addEventListener('mouseleave', onLeave)
+        const isTextInput = el.matches('input, textarea, select, [contenteditable="true"]')
+        el.addEventListener('mouseenter', isTextInput ? onTextInputEnter : onEnter)
+        el.addEventListener('mouseleave', isTextInput ? onTextInputLeave : onLeave)
         el.dataset.cursorBound = 'true'
       }
     }
-    document.querySelectorAll<HTMLElement>('a, button, [role="button"], input, textarea, select').forEach(bind)
+    document.querySelectorAll<HTMLElement>('a, button, [role="button"], input, textarea, select, [contenteditable="true"]').forEach(bind)
 
     const observer = new MutationObserver(() => {
-      document.querySelectorAll<HTMLElement>('a, button, [role="button"], input, textarea, select').forEach(bind)
+      document.querySelectorAll<HTMLElement>('a, button, [role="button"], input, textarea, select, [contenteditable="true"]').forEach(bind)
     })
     observer.observe(document.body, { childList: true, subtree: true })
 
     return () => {
+      document.body.classList.remove('has-custom-cursor')
       document.removeEventListener('mousemove', onMove)
       observer.disconnect()
-      cancelAnimationFrame(rafId)   // FIX: cancel the loop on unmount
+      cancelAnimationFrame(rafId)
     }
   }, [])
 

@@ -1,7 +1,19 @@
 import { Link } from "@/lib/i18n/navigation";
 import { prisma } from "@/lib/db";
+import { getEnv } from "@/lib/env";
 
 export default async function CaseStudiesPage() {
+  if (!getEnv().DATABASE_URL) {
+    return (
+      <main className="min-h-dvh px-6 py-16">
+        <div className="mx-auto max-w-5xl">
+          <h1 className="text-3xl font-semibold tracking-tight">Case Studies</h1>
+          <p className="mt-4 text-sm text-white/60">Case studies are coming soon.</p>
+        </div>
+      </main>
+    );
+  }
+
   const studies = await prisma.caseStudy.findMany({ where: { published: true }, include: { project: true }, orderBy: { updatedAt: "desc" } });
 
   return (

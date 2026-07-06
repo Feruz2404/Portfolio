@@ -1,8 +1,10 @@
-// Server Component: fetches all projects and passes to client for filtering.
 import { prisma } from "@/lib/db";
+import { getEnv } from "@/lib/env";
 import ProjectsClient from "@/app/[locale]/(public)/_sections/ProjectsClient";
 
 export default async function ProjectsPage() {
+  if (!getEnv().DATABASE_URL) return <ProjectsClient projects={[]} />;
+
   const projects = await prisma.project.findMany({
     orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
     select: {

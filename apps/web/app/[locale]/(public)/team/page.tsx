@@ -1,6 +1,10 @@
+import Image from "next/image";
 import { prisma } from "@/lib/db";
+import { getEnv } from "@/lib/env";
 
 export default async function TeamPage() {
+  if (!getEnv().DATABASE_URL) return <main className="min-h-screen px-6 py-24 text-center"><h1 className="text-3xl font-black">Team profiles are coming soon</h1></main>;
+
   const team = await prisma.teamMember.findMany({ where: { isActive: true }, orderBy: [{ order: "asc" as const }, { createdAt: "desc" as const }] });
 
   const initials = (name: string) => name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
@@ -15,9 +19,9 @@ export default async function TeamPage() {
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {team.map((m) => (
           <div key={m.id} className="glass rounded-2xl p-8 text-center group hover:-translate-y-1 transition-all duration-300">
-            <div className="mx-auto w-24 h-24 rounded-full overflow-hidden mb-5 ring-2 ring-indigo-500/20 group-hover:ring-indigo-500/50 transition-all">
+            <div className="relative mx-auto mb-5 h-24 w-24 overflow-hidden rounded-full ring-2 ring-indigo-500/20 transition-all group-hover:ring-indigo-500/50">
               {m.avatar ? (
-                <img src={m.avatar} alt={m.fullName} className="w-full h-full object-cover" />
+                <Image src={m.avatar} alt={m.fullName} fill sizes="96px" className="object-cover" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-xl">{initials(m.fullName)}</div>
               )}

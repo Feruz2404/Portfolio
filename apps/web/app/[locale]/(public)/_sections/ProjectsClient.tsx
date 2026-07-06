@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
+import Image from "next/image";
+import { Link } from "@/lib/i18n/navigation";
 
 const CATEGORIES = ["All", "Web Application", "API / Backend", "Healthcare", "AI / Machine Learning"];
 
@@ -71,12 +72,14 @@ export default function ProjectsClient({ projects }: { projects: Project[] }) {
                 whileHover={{ y: -4 }}
                 className="group glass rounded-2xl overflow-hidden hover:scale-[1.02] transition-all duration-300"
               >
-                <div className="aspect-video overflow-hidden">
+                <div className="relative aspect-video overflow-hidden">
                   {p.screenshots?.[0] ? (
-                    <img
+                    <Image
                       src={p.screenshots[0]}
                       alt={p.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      fill
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-indigo-600/20 to-purple-600/20" />
@@ -98,7 +101,7 @@ export default function ProjectsClient({ projects }: { projects: Project[] }) {
                     </div>
                   )}
                   <Link
-                    href={`/projects/${p.slug}` as any}
+                    href={`/projects/${p.slug}`}
                     className="mt-4 inline-flex items-center text-sm font-medium text-indigo-400 group-hover:text-indigo-300 transition-colors"
                   >
                     View Project{" "}

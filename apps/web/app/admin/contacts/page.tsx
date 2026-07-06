@@ -1,8 +1,11 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { prisma } from "@/lib/db";
+import { requireAdminPage } from "@/lib/adminAuth";
 
 export default async function AdminContactsPage() {
+  await requireAdminPage("contacts:write");
+
   const contacts = await prisma.contact.findMany({ orderBy: { updatedAt: "desc" } });
 
   return (

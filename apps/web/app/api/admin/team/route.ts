@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
+import { getAdminApiContext } from "@/lib/adminAuth";
+import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { auth } from "@/lib/server-auth";
-import { hasPermission } from "@/lib/rbac";
-import { Role } from "@prisma/client";
 import { z } from "zod";
 
 const createSchema = z.object({
@@ -22,29 +21,29 @@ const createSchema = z.object({
 });
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const role = (session.user as any).role as Role;
-  if (!hasPermission(role, "team:write") && role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const gate = await getAdminApiContext("team:write");
+  if (!gate.ok) return gate.response;
 
   const team = await prisma.teamMember.findMany({ orderBy: [{ order: "asc" }, { updatedAt: "desc" }] });
   return NextResponse.json({ team });
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const role = (session.user as any).role as Role;
-  if (!hasPermission(role, "team:write") && role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const gate = await getAdminApiContext("team:write");
+  if (!gate.ok) return gate.response;
 
   const body = await req.json().catch(() => null);
   const parsed = createSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
   const member = await prisma.teamMember.create({ data: parsed.data });
+  await writeAuditLog({
+    action: "create",
+    entity: "TeamMember",
+    entityId: member.id,
+    userId: gate.context.userId,
+    changes: { fullName: member.fullName, position: member.position }
+  });
+
   return NextResponse.json({ member }, { status: 201 });
 }

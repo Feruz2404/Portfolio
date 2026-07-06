@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { getAdminApiContext } from "@/lib/adminAuth";
+import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { auth } from "@/lib/server-auth";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 
@@ -11,9 +12,8 @@ const schema = z.object({
 });
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if ((session.user as any).role !== "ADMIN") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const gate = await getAdminApiContext("users:write");
+  if (!gate.ok) return gate.response;
 
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
@@ -25,6 +25,14 @@ export async function POST(req: Request) {
     where: { email: parsed.data.email },
     update: { role: parsed.data.role, hashedPassword },
     create: { email: parsed.data.email, role: parsed.data.role, hashedPassword }
+  });
+
+  await writeAuditLog({
+    action: "invite",
+    entity: "User",
+    entityId: user.id,
+    userId: gate.context.userId,
+    changes: { email: user.email, role: user.role }
   });
 
   return NextResponse.json({ user }, { status: 201 });

@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { requireAdminPage } from "@/lib/adminAuth";
 import ProjectForm from "@/components/admin/projects/ProjectForm";
 
 export default async function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireAdminPage("projects:write");
+
   const { id } = await params;
   const project = await prisma.project.findUnique({ where: { id } });
   if (!project) return notFound();

@@ -1,7 +1,11 @@
 import { Link } from "@/lib/i18n/navigation";
+import Image from "next/image";
 import { prisma } from "@/lib/db";
+import { getEnv } from "@/lib/env";
 
 export default async function BlogPage() {
+  if (!getEnv().DATABASE_URL) return <main className="min-h-screen px-6 py-24 text-center"><h1 className="text-3xl font-black">No posts yet</h1></main>;
+
   const posts = await prisma.blogPost.findMany({ where: { status: "PUBLISHED" }, orderBy: [{ publishedAt: "desc" as const }, { createdAt: "desc" as const }] });
 
   if (!posts.length) return <main className="min-h-screen px-6 py-24 text-center"><h1 className="text-3xl font-black">No posts yet</h1></main>;
@@ -20,8 +24,8 @@ export default async function BlogPage() {
         <Link href={`/blog/${featured.slug}`} className="block glass rounded-2xl overflow-hidden mb-12 group hover:border-indigo-500/30 transition-colors">
           <div className="grid md:grid-cols-2 gap-0">
             {featured.coverImage && (
-              <div className="aspect-video md:aspect-auto h-full">
-                <img src={featured.coverImage} alt={featured.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <div className="relative aspect-video h-full md:aspect-auto">
+                <Image src={featured.coverImage} alt={featured.title} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
               </div>
             )}
             <div className="p-8 md:p-12 flex flex-col justify-center">
@@ -42,8 +46,8 @@ export default async function BlogPage() {
           {rest.map((post) => (
             <Link key={post.id} href={`/blog/${post.slug}`} className="group glass rounded-2xl overflow-hidden hover:border-indigo-500/30 transition-all duration-300 hover:-translate-y-1">
               {post.coverImage && (
-                <div className="aspect-video">
-                  <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <div className="relative aspect-video">
+                  <Image src={post.coverImage} alt={post.title} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
                 </div>
               )}
               <div className="p-5">

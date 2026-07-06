@@ -2,6 +2,7 @@ import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
+import { Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
@@ -9,6 +10,10 @@ const credentialsSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
 });
+
+function isRole(value: unknown): value is Role {
+  return typeof value === "string" && Object.values(Role).includes(value as Role);
+}
 
 export const authOptions: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
@@ -35,21 +40,21 @@ export const authOptions: NextAuthConfig = {
           name:  user.name,
           image: user.image,
           role:  user.role,
-        } as any;
+        };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as any).role;
-        token.uid  = (user as any).id;
+        if (isRole(user.role)) token.role = user.role;
+        token.uid = user.id;
       }
       return token;
     },
     async session({ session, token }) {
-      (session.user as any).role = token.role;
-      (session.user as any).id   = token.uid;
+      if (typeof token.uid === "string") session.user.id = token.uid;
+      if (isRole(token.role)) session.user.role = token.role;
       return session;
     },
   },
@@ -57,7 +62,5 @@ export const authOptions: NextAuthConfig = {
     signIn: "/admin/login",
     error:  "/admin/unauthorized",
   },
-  // FIX: removed hardcoded fallback 'change-me-in-production'
-  // NEXTAUTH_SECRET must be set in .env
   secret: process.env.NEXTAUTH_SECRET,
 };

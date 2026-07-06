@@ -6,7 +6,7 @@ export default function AdminHeader() {
       <div className="flex items-center justify-between px-6 py-4">
         <div className="text-sm text-white/70">Portfolio</div>
         <div className="flex items-center gap-3">
-          <Link href={"/" as any} className="text-sm text-white/70 hover:text-white">
+          <Link href="/" className="text-sm text-white/70 hover:text-white">
             View site
           </Link>
         </div>

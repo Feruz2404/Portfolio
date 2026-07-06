@@ -1,13 +1,14 @@
 import { Resend } from "resend";
+import { getEnv, requireEnv } from "@/lib/env";
 
 let resend: Resend | null = null;
 
 export function getResend() {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) throw new Error("RESEND_API_KEY is not configured");
-
+  const apiKey = requireEnv("RESEND_API_KEY");
   resend ??= new Resend(apiKey);
   return resend;
 }
 
-export const FROM_EMAIL = process.env.FROM_EMAIL ?? "hello@example.com";
+export function getFromEmail() {
+  return getEnv().FROM_EMAIL ?? "hello@example.com";
+}
