@@ -1,33 +1,7 @@
 import { Link } from "@/lib/i18n/navigation";
-import { prisma } from "@/lib/db";
+import { databaseIsConfigured, prisma } from "@/lib/db";
 
 export default async function TeamPage() {
-  const team = await prisma.teamMember.findMany({ where: { isActive: true }, orderBy: [{ order: "asc" }, { createdAt: "desc" }] });
-
-  return (
-    <main className="min-h-dvh px-6 py-16">
-      <div className="mx-auto max-w-5xl">
-        <h1 className="text-3xl font-semibold tracking-tight">Team</h1>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {team.map((m) => (
-            <Link
-              key={m.id}
-              href={`/team/${m.slug}`}
-              className="rounded-xl border border-white/10 bg-surface-01 p-5 hover:border-white/20"
-            >
-              <div className="text-lg font-semibold">{m.fullName}</div>
-              <div className="mt-1 text-sm text-white/60">{m.position}</div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {m.skills.slice(0, 6).map((s) => (
-                  <span key={s} className="rounded-md border border-white/10 px-2 py-1 text-xs text-white/70">
-                    {s}
-                  </span>
-                ))}
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </main>
-  );
+  const team = databaseIsConfigured ? await prisma.teamMember.findMany({ where: { isActive: true }, orderBy: [{ order: "asc" }, { createdAt: "desc" }] }).catch(() => []) : [];
+  return <main className="min-h-dvh bg-surface-00 px-6 py-16 sm:px-10 lg:px-12"><div className="mx-auto max-w-7xl"><div className="max-w-3xl"><p className="eyebrow">People / the collaborators</p><h1 className="mt-5 text-5xl font-semibold tracking-[-0.08em] sm:text-7xl">Good work is rarely a solo act.</h1><p className="mt-6 max-w-xl text-base leading-7 text-white/55">Meet the people, partners, and perspectives that make the work sharper.</p></div>{team.length ? <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{team.map((member, index) => <Link key={member.id} href={`/team/${member.slug}`} className="group rounded-3xl border border-white/10 bg-white/[0.035] p-6 transition hover:-translate-y-1 hover:border-cyan-200/30"><div className="flex items-center justify-between"><span className="grid h-12 w-12 place-items-center rounded-full border border-cyan-100/20 bg-cyan-100/10 font-mono text-xs text-cyan-100">0{index + 1}</span><span className="text-xl text-white/25 transition group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-cyan-100">↗</span></div><h2 className="mt-14 text-2xl font-semibold tracking-[-0.04em] group-hover:text-cyan-100">{member.fullName}</h2><p className="mt-2 text-sm text-white/45">{member.position}</p><div className="mt-6 flex flex-wrap gap-2">{member.skills.slice(0, 5).map((skill) => <span key={skill} className="rounded-full border border-white/10 px-2.5 py-1 font-mono text-[10px] text-white/40">{skill}</span>)}</div></Link>)}</div> : <div className="mt-14 rounded-3xl border border-white/10 bg-white/[0.035] p-8 text-sm leading-7 text-white/50">Team profiles will appear here as collaborators are added.</div>}</div></main>;
 }

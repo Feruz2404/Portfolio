@@ -19,19 +19,19 @@ export default function AdminSidebar({ role }: { role: Role }) {
   ];
 
   return (
-    <aside className="sticky top-0 h-dvh border-r border-white/10 bg-surface-01 p-4">
-      <div className="mb-6">
+    <aside className="border-b border-white/10 bg-surface-01 p-4 lg:sticky lg:top-0 lg:h-dvh lg:border-b-0 lg:border-r">
+      <div className="mb-4 lg:mb-6">
         <div className="text-sm font-semibold">Admin</div>
         <div className="text-xs text-white/50">Role: {role}</div>
       </div>
-      <nav className="space-y-1">
+      <nav className="flex gap-1 overflow-x-auto pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0">
         {links
           .filter((l) => !l.perm || hasPermission(role, l.perm))
           .map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className="block rounded-md px-3 py-2 text-sm text-white/80 hover:bg-white/5"
+              className="block shrink-0 rounded-md px-3 py-2 text-sm text-white/80 hover:bg-white/5"
             >
               {l.label}
             </Link>

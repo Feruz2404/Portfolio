@@ -11,13 +11,18 @@
   "scripts": {
     "dev": "npm --workspace apps/web run dev",
     "build": "npm --workspace apps/web run build",
+    "build:api": "npm --workspace apps/api run build",
     "start": "npm --workspace apps/web run start",
+    "start:api": "npm --workspace apps/api run start",
+    "dev:api": "npm --workspace apps/api run start:dev",
+    "migration:api": "npm --workspace apps/api run migration:run",
     "lint": "npm --workspace apps/web run lint",
     "typecheck": "npm --workspace apps/web run typecheck",
     "format": "npm --workspace apps/web run format",
     "prisma:generate": "npm --workspace apps/web run prisma:generate",
     "prisma:migrate": "npm --workspace apps/web run prisma:migrate",
     "prisma:studio": "npm --workspace apps/web run prisma:studio",
-    "seed": "npm --workspace apps/web run seed"
+    "seed": "npm --workspace apps/web run seed",
+    "typecheck:api": "npm --workspace apps/api run typecheck"
   }
 }

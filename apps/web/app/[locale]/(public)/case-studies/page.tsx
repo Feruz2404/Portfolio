@@ -1,27 +1,8 @@
 import { Link } from "@/lib/i18n/navigation";
-import { prisma } from "@/lib/db";
+import { databaseIsConfigured, prisma } from "@/lib/db";
 import { publicProjectSelect, PUBLIC_PROJECT_STATUSES } from "@/lib/publicData";
 
 export default async function CaseStudiesPage() {
-  const studies = await prisma.caseStudy.findMany({
-    where: { published: true, project: { status: { in: PUBLIC_PROJECT_STATUSES } } },
-    select: { id: true, overview: true, project: { select: publicProjectSelect }, updatedAt: true },
-    orderBy: { updatedAt: "desc" }
-  });
-
-  return (
-    <main className="min-h-dvh px-6 py-16">
-      <div className="mx-auto max-w-5xl">
-        <h1 className="text-3xl font-semibold tracking-tight">Case Studies</h1>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {studies.map((s) => (
-            <Link key={s.id} href={`/case-studies/${s.project.slug}`} className="rounded-xl border border-white/10 bg-surface-01 p-5 hover:border-white/20">
-              <div className="text-lg font-semibold">{s.project.title}</div>
-              <p className="mt-2 text-sm text-white/60 line-clamp-2">{s.overview}</p>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </main>
-  );
+  const studies = databaseIsConfigured ? await prisma.caseStudy.findMany({ where: { published: true, project: { status: { in: PUBLIC_PROJECT_STATUSES } } }, select: { id: true, overview: true, project: { select: publicProjectSelect }, updatedAt: true }, orderBy: { updatedAt: "desc" } }).catch(() => []) : [];
+  return <main className="min-h-dvh bg-surface-00 px-6 py-16 sm:px-10 lg:px-12"><div className="mx-auto max-w-7xl"><div className="max-w-3xl"><p className="eyebrow">Case studies / behind the work</p><h1 className="mt-5 text-5xl font-semibold tracking-[-0.08em] sm:text-7xl">The decisions behind the pixels.</h1><p className="mt-6 max-w-xl text-base leading-7 text-white/55">Longer stories about the constraints, trade-offs, and systems that made each project work.</p></div>{studies.length ? <div className="mt-14 grid gap-5 lg:grid-cols-2">{studies.map((study, index) => <Link key={study.id} href={`/case-studies/${study.project.slug}`} className="group rounded-3xl border border-white/10 bg-white/[0.035] p-7 transition hover:-translate-y-1 hover:border-cyan-200/30"><div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.16em] text-white/35"><span>0{index + 1}</span><span>{study.project.category}</span></div><h2 className="mt-16 text-3xl font-semibold tracking-[-0.05em] group-hover:text-cyan-100">{study.project.title}</h2><p className="mt-4 line-clamp-3 text-sm leading-6 text-white/50">{study.overview}</p><div className="mt-8 text-xs font-semibold uppercase tracking-[0.16em] text-white/35 group-hover:text-white">Read the case study ↗</div></Link>)}</div> : <div className="mt-14 rounded-3xl border border-white/10 bg-white/[0.035] p-8 text-sm leading-7 text-white/50">Case studies will appear here once they are published from the admin panel.</div>}</div></main>;
 }

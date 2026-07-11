@@ -7,69 +7,8 @@ export default function ContactForm() {
   const [ok, setOk] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  return (
-    <form
-      className="rounded-xl border border-white/10 bg-surface-01 p-6 space-y-4"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        setError(null);
-        setOk(false);
-        setLoading(true);
-
-        try {
-          const fd = new FormData(e.currentTarget);
-          const payload = Object.fromEntries(fd.entries());
-          const res = await fetch("/api/contacts", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(payload)
-          });
-
-          if (!res.ok) {
-            setError(res.status === 429 ? "Too many requests. Please try again later." : "Failed to send");
-            return;
-          }
-
-          setOk(true);
-          (e.currentTarget as HTMLFormElement).reset();
-        } catch {
-          setError("Network error. Please try again.");
-        } finally {
-          setLoading(false);
-        }
-      }}
-    >
-      <Field label="Name" name="name">
-        <input id="name" name="name" required className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
-      </Field>
-      <Field label="Email" name="email">
-        <input id="email" name="email" type="email" required className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
-      </Field>
-      <Field label="Company" name="company">
-        <input id="company" name="company" className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
-      </Field>
-      <Field label="Phone" name="phone">
-        <input id="phone" name="phone" className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
-      </Field>
-      <Field label="Message" name="message">
-        <textarea id="message" name="message" required rows={5} className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm" />
-      </Field>
-
-      {error ? <p aria-live="polite" className="text-sm text-red-400">{error}</p> : null}
-      {ok ? <p aria-live="polite" className="text-sm text-green-400">Sent</p> : null}
-
-      <button disabled={loading} className="rounded-md bg-brand-violet px-4 py-2 text-sm font-semibold disabled:opacity-60">
-        {loading ? "Sending..." : "Send"}
-      </button>
-    </form>
-  );
+  return <form className="space-y-5 rounded-3xl border border-white/10 bg-white/[0.035] p-6 sm:p-8" onSubmit={async (event) => { event.preventDefault(); setError(null); setOk(false); setLoading(true); try { const form = new FormData(event.currentTarget); const response = await fetch("/api/contacts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.fromEntries(form.entries())) }); if (!response.ok) { setError(response.status === 429 ? "Too many requests. Please try again later." : "Unable to send this yet. Please try again."); return; } setOk(true); event.currentTarget.reset(); } catch { setError("Network error. Please try again."); } finally { setLoading(false); } }}><div className="grid gap-5 sm:grid-cols-2"><Field label="Name" name="name"><input id="name" name="name" required className={inputClass} /></Field><Field label="Email" name="email"><input id="email" name="email" type="email" required className={inputClass} /></Field><Field label="Company" name="company"><input id="company" name="company" className={inputClass} /></Field><Field label="Budget" name="budget"><select id="budget" name="budget" className={inputClass}><option value="">Choose a range</option><option value="under-1k">Under $1k</option><option value="1k-5k">$1k–5k</option><option value="5k-20k">$5k–20k</option><option value="20k-plus">$20k+</option></select></Field></div><Field label="What are you building?" name="message"><textarea id="message" name="message" required rows={8} placeholder="A few sentences are perfect…" className={inputClass} /></Field>{error ? <p aria-live="polite" className="rounded-xl border border-red-300/20 bg-red-300/10 px-4 py-3 text-sm text-red-100">{error}</p> : null}{ok ? <p aria-live="polite" className="rounded-xl border border-cyan-200/20 bg-cyan-100/10 px-4 py-3 text-sm text-cyan-100">Message received. I’ll be in touch soon.</p> : null}<button type="submit" disabled={loading} className="rounded-full bg-cyan-100 px-6 py-3 text-sm font-bold text-surface-00 transition hover:bg-white disabled:cursor-wait disabled:opacity-60">{loading ? "Sending…" : "Send the brief ↗"}</button></form>;
 }
 
-function Field({ label, name, children }: { label: string; name: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-2">
-      <label htmlFor={name} className="text-sm text-white/70">{label}</label>
-      {children}
-    </div>
-  );
-}
+const inputClass = "w-full rounded-xl border border-white/10 bg-surface-00 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-cyan-200/60";
+function Field({ label, name, children }: { label: string; name: string; children: React.ReactNode }) { return <div className="space-y-2"><label htmlFor={name} className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">{label}</label>{children}</div>; }

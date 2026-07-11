@@ -1,34 +1,13 @@
-import { Link } from "@/lib/i18n/navigation";
-import { prisma } from "@/lib/db";
-import { publicProjectSelect, publicProjectWhere } from "@/lib/publicData";
+import ProjectExplorer from "@/components/portfolio/ProjectExplorer";
+import { getPublicProjects } from "@/lib/portfolioData";
 
 export default async function ProjectsPage() {
-  const projects = await prisma.project.findMany({
-    where: publicProjectWhere,
-    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-    select: publicProjectSelect
-  });
-
+  const projects = await getPublicProjects();
   return (
-    <main className="min-h-dvh px-6 py-16">
-      <div className="mx-auto max-w-5xl">
-        <h1 className="text-3xl font-semibold tracking-tight">Projects</h1>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {projects.map((p) => (
-            <Link
-              key={p.id}
-              href={`/projects/${p.slug}`}
-              className="rounded-xl border border-white/10 bg-surface-01 p-5 hover:border-white/20"
-            >
-              <div className="flex items-center justify-between">
-                <div className="text-lg font-semibold">{p.title}</div>
-                {p.featured ? <span className="text-xs text-brand-cyan">Featured</span> : null}
-              </div>
-              <p className="mt-2 line-clamp-2 text-sm text-white/60">{p.description}</p>
-              <div className="mt-4 text-xs text-white/50">{p.category}</div>
-            </Link>
-          ))}
-        </div>
+    <main className="min-h-dvh bg-surface-00 px-6 py-16 sm:px-10 lg:px-12">
+      <div className="mx-auto max-w-7xl">
+        <div className="max-w-3xl"><p className="eyebrow">Selected work / archive</p><h1 className="mt-5 text-5xl font-semibold tracking-[-0.08em] sm:text-7xl">Built to be used.<br /><span className="text-white/35">Made to be remembered.</span></h1><p className="mt-6 max-w-xl text-base leading-7 text-white/55">Explore product systems, creative experiments, and digital experiences shaped from the first idea to the last polished detail.</p></div>
+        <div className="mt-14"><ProjectExplorer projects={projects} /></div>
       </div>
     </main>
   );

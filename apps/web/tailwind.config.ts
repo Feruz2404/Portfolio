@@ -22,7 +22,7 @@ export default {
         }
       },
       fontFamily: {
-        display: ["var(--font-syne)", "system-ui", "sans-serif"],
+        display: ["var(--font-space)", "system-ui", "sans-serif"],
         body: ["var(--font-inter)", "system-ui", "sans-serif"],
         mono: ["var(--font-jetbrains)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"]
       }

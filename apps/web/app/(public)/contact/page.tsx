@@ -1,15 +1,5 @@
 import ContactForm from "@/components/public/contact/ContactForm";
 
 export default function ContactPage() {
-  return (
-    <main className="min-h-dvh px-6 py-16">
-      <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-2">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Contact</h1>
-          <p className="mt-4 text-white/70">Tell us about your project. We will respond quickly.</p>
-        </div>
-        <ContactForm />
-      </div>
-    </main>
-  );
+  return <main className="min-h-dvh bg-surface-00 px-6 py-16 sm:px-10 lg:px-12"><div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-start"><div className="lg:sticky lg:top-28"><p className="eyebrow">Contact / say hello</p><h1 className="mt-5 max-w-xl text-5xl font-semibold tracking-[-0.08em] sm:text-7xl">Have a good problem?</h1><p className="mt-7 max-w-md text-base leading-7 text-white/55">Tell me what you are building, what feels stuck, and what you would love to be true three months from now.</p><div className="mt-12 space-y-5 border-t border-white/10 pt-6 text-sm"><div><div className="eyebrow">Email</div><a href="mailto:hello@example.com" className="mt-2 inline-block text-white/75 transition hover:text-cyan-100">hello@example.com ↗</a></div><div><div className="eyebrow">Typical response</div><div className="mt-2 text-white/55">Within two business days</div></div></div></div><ContactForm /></div></main>;
 }

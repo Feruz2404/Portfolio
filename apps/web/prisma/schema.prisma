@@ -105,6 +105,7 @@ model Project {
   screenshots  String[]
   videoUrl     String?
   liveUrl      String?
+  vercelUrl    String?
   githubUrl    String?
   clientName   String?
   clientLogo   String?

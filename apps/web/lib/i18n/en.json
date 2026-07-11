@@ -1,10 +1,10 @@
 {
   "nav": {
     "about": "About",
-    "projects": "Projects",
+    "projects": "Work",
     "team": "Team",
     "services": "Services",
-    "blog": "Blog",
+    "blog": "Notes",
     "contact": "Contact"
   }
 }

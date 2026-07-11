@@ -21,6 +21,7 @@ export const publicProjectSelect = {
   screenshots: true,
   videoUrl: true,
   liveUrl: true,
+  vercelUrl: true,
   githubUrl: true,
   clientName: true,
   clientLogo: true,

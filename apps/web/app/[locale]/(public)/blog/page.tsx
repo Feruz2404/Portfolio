@@ -1,22 +1,8 @@
 import { Link } from "@/lib/i18n/navigation";
-import { prisma } from "@/lib/db";
+import { databaseIsConfigured, prisma } from "@/lib/db";
 
 export default async function BlogPage() {
-  const posts = await prisma.blogPost.findMany({ where: { status: "PUBLISHED" }, orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }] });
+  const posts = databaseIsConfigured ? await prisma.blogPost.findMany({ where: { status: "PUBLISHED" }, orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }] }).catch(() => []) : [];
 
-  return (
-    <main className="min-h-dvh px-6 py-16">
-      <div className="mx-auto max-w-5xl">
-        <h1 className="text-3xl font-semibold tracking-tight">Blog</h1>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {posts.map((p) => (
-            <Link key={p.id} href={`/blog/${p.slug}`} className="rounded-xl border border-white/10 bg-surface-01 p-5 hover:border-white/20">
-              <div className="text-lg font-semibold">{p.title}</div>
-              {p.excerpt ? <p className="mt-2 text-sm text-white/60 line-clamp-2">{p.excerpt}</p> : null}
-            </Link>
-          ))}
-        </div>
-      </div>
-    </main>
-  );
+  return <main className="min-h-dvh bg-surface-00 px-6 py-16 sm:px-10 lg:px-12"><div className="mx-auto max-w-7xl"><div className="max-w-3xl"><p className="eyebrow">Notes / field recordings</p><h1 className="mt-5 text-5xl font-semibold tracking-[-0.08em] sm:text-7xl">Ideas I keep coming back to.</h1><p className="mt-6 max-w-xl text-base leading-7 text-white/55">Short notes on product thinking, creative code, and the little decisions that make digital work feel human.</p></div>{posts.length ? <div className="mt-14 grid gap-5 lg:grid-cols-3">{posts.map((post, index) => <Link key={post.id} href={`/blog/${post.slug}`} className="group rounded-3xl border border-white/10 bg-white/[0.035] p-6 transition hover:-translate-y-1 hover:border-cyan-200/30"><div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.16em] text-white/35"><span>0{index + 1}</span><span>{post.readingTime ? `${post.readingTime} min read` : "Note"}</span></div><h2 className="mt-16 text-2xl font-semibold tracking-[-0.04em] transition group-hover:text-cyan-100">{post.title}</h2>{post.excerpt ? <p className="mt-4 line-clamp-3 text-sm leading-6 text-white/50">{post.excerpt}</p> : null}<div className="mt-8 text-xs font-semibold uppercase tracking-[0.16em] text-white/35 group-hover:text-white">Read note ↗</div></Link>)}</div> : <div className="mt-14 rounded-3xl border border-white/10 bg-white/[0.035] p-8 text-sm leading-7 text-white/50">The first notes are being edited. In the meantime, the work archive is the best place to start.</div>}</div></main>;
 }

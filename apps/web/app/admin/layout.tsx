@@ -9,7 +9,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-dvh bg-surface-00">
-      <div className="mx-auto grid max-w-[1400px] grid-cols-[260px_1fr] gap-0">
+      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-0 lg:grid-cols-[260px_1fr]">
         <AdminSidebar role={role} />
         <div className="min-w-0">
           <AdminHeader />
