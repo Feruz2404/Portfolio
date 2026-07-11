@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export default async function TestimonialsPage() {
   const testimonials = await prisma.testimonial.findMany({ where: { approved: true }, orderBy: [{ featured: "desc" }, { createdAt: "desc" }] });
 

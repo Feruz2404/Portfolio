@@ -4,6 +4,8 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import type { Role } from "@prisma/client";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -19,7 +21,10 @@ export const authOptions: NextAuthConfig = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
+        const limit = checkRateLimit(`login:${getClientIp(request)}`, 10, 15 * 60_000);
+        if (!limit.allowed) return null;
+
         const parsed = credentialsSchema.safeParse(credentials);
         if (!parsed.success) return null;
 
@@ -35,21 +40,21 @@ export const authOptions: NextAuthConfig = {
           name: user.name,
           image: user.image,
           role: user.role
-        } as any;
+        };
       }
     })
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as any).role;
-        token.uid = (user as any).id;
+        token.role = user.role;
+        token.uid = user.id;
       }
       return token;
     },
     async session({ session, token }) {
-      (session.user as any).role = token.role;
-      (session.user as any).id = token.uid;
+      if (typeof token.role === "string") session.user.role = token.role as Role;
+      if (typeof token.uid === "string") session.user.id = token.uid;
       return session;
     }
   },

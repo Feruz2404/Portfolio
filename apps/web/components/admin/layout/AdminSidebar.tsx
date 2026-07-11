@@ -1,20 +1,21 @@
 import Link from "next/link";
+import type { Route } from "next";
 import { Role } from "@prisma/client";
 import { hasPermission } from "@/lib/rbac";
 
 export default function AdminSidebar({ role }: { role: Role }) {
-  const links: Array<{ href: string; label: string; perm?: string }> = [
-    { href: "/admin/dashboard", label: "Dashboard" },
-    { href: "/admin/projects", label: "Projects", perm: "projects:write" },
-    { href: "/admin/team", label: "Team", perm: "team:write" },
-    { href: "/admin/blog", label: "Blog", perm: "blog:write" },
-    { href: "/admin/testimonials", label: "Testimonials" },
-    { href: "/admin/case-studies", label: "Case Studies" },
-    { href: "/admin/services", label: "Services" },
-    { href: "/admin/contacts", label: "Contacts", perm: "contacts:write" },
-    { href: "/admin/media", label: "Media", perm: "media:write" },
-    { href: "/admin/analytics", label: "Analytics", perm: "analytics:read" },
-    { href: "/admin/users", label: "Users" }
+  const links: Array<{ href: Route; label: string; perm?: string }> = [
+    { href: "/admin/dashboard" as Route, label: "Dashboard", perm: "analytics:read" },
+    { href: "/admin/projects" as Route, label: "Projects", perm: "projects:read" },
+    { href: "/admin/team" as Route, label: "Team", perm: "team:read" },
+    { href: "/admin/blog" as Route, label: "Blog", perm: "blog:read" },
+    { href: "/admin/testimonials" as Route, label: "Testimonials", perm: "testimonials:read" },
+    { href: "/admin/case-studies" as Route, label: "Case Studies", perm: "case-studies:read" },
+    { href: "/admin/services" as Route, label: "Services", perm: "services:read" },
+    { href: "/admin/contacts" as Route, label: "Contacts", perm: "contacts:read" },
+    { href: "/admin/media" as Route, label: "Media", perm: "media:read" },
+    { href: "/admin/analytics" as Route, label: "Analytics", perm: "analytics:read" },
+    { href: "/admin/users" as Route, label: "Users", perm: "users:read" }
   ];
 
   return (

@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { PUBLIC_PROJECT_STATUSES } from "@/lib/publicData";
 
-export default async function CaseStudyDetailPage({ params }: { params: { slug: string } }) {
-  const project = await prisma.project.findUnique({ where: { slug: params.slug } });
+export default async function CaseStudyDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const project = await prisma.project.findFirst({ where: { slug, status: { in: PUBLIC_PROJECT_STATUSES } } });
   if (!project) return notFound();
 
   const study = await prisma.caseStudy.findUnique({ where: { projectId: project.id } });

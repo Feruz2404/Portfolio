@@ -1,18 +1,21 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { auth } from "@/lib/server-auth";
+import { authorize } from "@/lib/adminAuth";
+import { mediaSchema } from "@/lib/adminSchemas";
+import { readJsonBody } from "@/lib/request";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const gate = await authorize("media:read");
+  if (!gate.authorized) return gate.response;
   const media = await prisma.media.findMany({ orderBy: { createdAt: "desc" } });
   return NextResponse.json({ media });
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const body = await req.json();
-  const item = await prisma.media.create({ data: body });
+  const gate = await authorize("media:write");
+  if (!gate.authorized) return gate.response;
+  const parsed = mediaSchema.safeParse(await readJsonBody(req, 64 * 1024));
+  if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  const item = await prisma.media.create({ data: parsed.data });
   return NextResponse.json({ media: item }, { status: 201 });
 }

@@ -1,8 +1,13 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { prisma } from "@/lib/db";
+import { publicProjectSelect, PUBLIC_PROJECT_STATUSES } from "@/lib/publicData";
 
 export default async function CaseStudiesPage() {
-  const studies = await prisma.caseStudy.findMany({ where: { published: true }, include: { project: true }, orderBy: { updatedAt: "desc" } });
+  const studies = await prisma.caseStudy.findMany({
+    where: { published: true, project: { status: { in: PUBLIC_PROJECT_STATUSES } } },
+    select: { id: true, overview: true, project: { select: publicProjectSelect }, updatedAt: true },
+    orderBy: { updatedAt: "desc" }
+  });
 
   return (
     <main className="min-h-dvh px-6 py-16">

@@ -1,10 +1,16 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { publicProjectSelect, publicTeamSelect, PUBLIC_PROJECT_STATUSES } from "@/lib/publicData";
 
-export default async function TeamMemberPage({ params }: { params: { slug: string } }) {
-  const member = await prisma.teamMember.findUnique({
-    where: { slug: params.slug },
-    include: { projects: { include: { project: true } }, achievements: true }
+export default async function TeamMemberPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const member = await prisma.teamMember.findFirst({
+    where: { slug, isActive: true },
+    select: {
+      ...publicTeamSelect,
+      projects: { where: { project: { status: { in: PUBLIC_PROJECT_STATUSES } } }, select: { id: true, role: true, project: { select: publicProjectSelect } } },
+      achievements: { select: { id: true, title: true, description: true, date: true } }
+    }
   });
   if (!member) return notFound();
 

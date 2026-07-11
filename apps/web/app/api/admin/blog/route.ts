@@ -1,50 +1,47 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { auth } from "@/lib/server-auth";
-import { hasPermission } from "@/lib/rbac";
-import { Role } from "@prisma/client";
+import { authorize } from "@/lib/adminAuth";
+import { publicAuthorSelect } from "@/lib/publicData";
+import { readJsonBody } from "@/lib/request";
 import { z } from "zod";
 
 const schema = z.object({
-  title: z.string().min(2),
-  slug: z.string().min(2),
-  excerpt: z.string().optional().nullable(),
-  content: z.string().min(10),
-  coverImage: z.string().optional().nullable(),
+  title: z.string().trim().min(2).max(200),
+  slug: z.string().trim().min(2).max(200).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  excerpt: z.string().trim().max(1000).optional().nullable(),
+  content: z.string().trim().min(10).max(100_000),
+  coverImage: z.string().url().max(2048).optional().nullable(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
   publishedAt: z.string().datetime().optional().nullable()
 });
 
-async function requireWrite() {
-  const session = await auth();
-  if (!session?.user) return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
-  const role = (session.user as any).role as Role;
-  if (!hasPermission(role, "blog:write") && role !== "ADMIN") {
-    return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
-  }
-  return { session, role };
-}
-
 export async function GET() {
-  const gate = await requireWrite();
-  if (gate.error) return gate.error;
+  const gate = await authorize("blog:read");
+  if (!gate.authorized) return gate.response;
 
-  const posts = await prisma.blogPost.findMany({ orderBy: { updatedAt: "desc" }, include: { author: true, category: true } });
+  const posts = await prisma.blogPost.findMany({
+    orderBy: { updatedAt: "desc" },
+    select: {
+      id: true, title: true, slug: true, excerpt: true, content: true, coverImage: true,
+      status: true, publishedAt: true, views: true, readingTime: true, createdAt: true, updatedAt: true,
+      author: { select: publicAuthorSelect }, category: true
+    }
+  });
   return NextResponse.json({ posts });
 }
 
 export async function POST(req: Request) {
-  const gate = await requireWrite();
-  if (gate.error) return gate.error;
+  const gate = await authorize("blog:write");
+  if (!gate.authorized) return gate.response;
 
-  const body = await req.json().catch(() => null);
+  const body = await readJsonBody(req, 128 * 1024);
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
   const post = await prisma.blogPost.create({
     data: {
       ...parsed.data,
-      authorId: (gate.session!.user as any).id,
+      authorId: gate.session.user.id,
       publishedAt: parsed.data.publishedAt ? new Date(parsed.data.publishedAt) : null
     }
   });

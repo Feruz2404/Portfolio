@@ -31,20 +31,25 @@ export default function TeamMemberForm({ mode, member }: { mode: "create" | "edi
           order: Number(fd.get("order") || 0)
         };
 
-        const res = await fetch("/api/admin/team" + (mode === "edit" ? `/${member!.id}` : ""), {
-          method: mode === "edit" ? "PUT" : "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(payload)
-        });
+        try {
+          const res = await fetch("/api/admin/team" + (mode === "edit" ? `/${member!.id}` : ""), {
+            method: mode === "edit" ? "PUT" : "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(payload)
+          });
 
-        if (!res.ok) {
-          setError("Failed to save");
+          if (!res.ok) {
+            setError("Failed to save");
+            return;
+          }
+
+          router.push("/admin/team");
+          router.refresh();
+        } catch {
+          setError("Network error. Please try again.");
+        } finally {
           setLoading(false);
-          return;
         }
-
-        router.push("/admin/team");
-        router.refresh();
       }}
     >
       <Field label="Full name">

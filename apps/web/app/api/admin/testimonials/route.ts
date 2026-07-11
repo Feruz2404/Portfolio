@@ -1,19 +1,21 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { auth } from "@/lib/server-auth";
-import { Role } from "@prisma/client";
+import { authorize } from "@/lib/adminAuth";
+import { testimonialSchema } from "@/lib/adminSchemas";
+import { readJsonBody } from "@/lib/request";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const gate = await authorize("testimonials:read");
+  if (!gate.authorized) return gate.response;
   const testimonials = await prisma.testimonial.findMany({ orderBy: { updatedAt: "desc" } });
   return NextResponse.json({ testimonials });
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const body = await req.json();
-  const t = await prisma.testimonial.create({ data: body });
+  const gate = await authorize("testimonials:write");
+  if (!gate.authorized) return gate.response;
+  const parsed = testimonialSchema.safeParse(await readJsonBody(req));
+  if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  const t = await prisma.testimonial.create({ data: parsed.data });
   return NextResponse.json({ testimonial: t }, { status: 201 });
 }

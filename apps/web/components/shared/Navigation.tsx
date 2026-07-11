@@ -1,14 +1,17 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import type { Route } from "next";
+import NextLink from "next/link";
 import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/lib/i18n/navigation";
+import { useState } from "react";
 
 export default function Navigation() {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
-  const links = [
+  const links: Array<{ href: string; label: string }> = [
     { href: "/about", label: t("about") },
     { href: "/projects", label: t("projects") },
     { href: "/team", label: t("team") },
@@ -37,10 +40,33 @@ export default function Navigation() {
             </Link>
           ))}
         </nav>
-        <Link href="/admin/dashboard" className="text-xs text-white/60 hover:text-white">
-          Admin
-        </Link>
+        <div className="flex items-center gap-3">
+          <NextLink href={"/admin/dashboard" as Route} className="text-xs text-white/60 hover:text-white">
+            Admin
+          </NextLink>
+          <button
+            type="button"
+            className="rounded-md border border-white/10 px-2 py-1 text-xs text-white/70 md:hidden"
+            aria-expanded={open}
+            aria-controls="mobile-navigation"
+            aria-label="Toggle navigation"
+            onClick={() => setOpen((value) => !value)}
+          >
+            Menu
+          </button>
+        </div>
       </div>
+      {open ? (
+        <nav id="mobile-navigation" className="border-t border-white/10 px-6 py-3 md:hidden">
+          <div className="mx-auto flex max-w-6xl flex-col gap-2">
+            {links.map((l) => (
+              <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="rounded-md px-2 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white">
+                {l.label}
+              </Link>
+            ))}
+          </div>
+        </nav>
+      ) : null}
     </header>
   );
 }

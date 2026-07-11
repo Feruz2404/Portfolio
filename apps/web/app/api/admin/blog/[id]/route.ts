@@ -1,49 +1,40 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { auth } from "@/lib/server-auth";
-import { hasPermission } from "@/lib/rbac";
-import { Role } from "@prisma/client";
+import { authorize } from "@/lib/adminAuth";
+import { readJsonBody } from "@/lib/request";
 import { z } from "zod";
 
 const schema = z.object({
-  title: z.string().min(2).optional(),
-  slug: z.string().min(2).optional(),
-  excerpt: z.string().optional().nullable(),
-  content: z.string().min(10).optional(),
-  coverImage: z.string().optional().nullable(),
+  title: z.string().trim().min(2).max(200).optional(),
+  slug: z.string().trim().min(2).max(200).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
+  excerpt: z.string().trim().max(1000).optional().nullable(),
+  content: z.string().trim().min(10).max(100_000).optional(),
+  coverImage: z.string().url().max(2048).optional().nullable(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).optional(),
   publishedAt: z.string().datetime().optional().nullable()
 });
 
-async function requireWrite() {
-  const session = await auth();
-  if (!session?.user) return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
-  const role = (session.user as any).role as Role;
-  if (!hasPermission(role, "blog:write") && role !== "ADMIN") {
-    return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
-  }
-  return { session, role };
-}
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const gate = await authorize("blog:read");
+  if (!gate.authorized) return gate.response;
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  const gate = await requireWrite();
-  if (gate.error) return gate.error;
-
-  const post = await prisma.blogPost.findUnique({ where: { id: params.id } });
+  const { id } = await params;
+  const post = await prisma.blogPost.findUnique({ where: { id } });
   if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ post });
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-  const gate = await requireWrite();
-  if (gate.error) return gate.error;
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const gate = await authorize("blog:write");
+  if (!gate.authorized) return gate.response;
 
-  const body = await req.json().catch(() => null);
+  const body = await readJsonBody(req, 128 * 1024);
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
+  const { id } = await params;
   const post = await prisma.blogPost.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       ...parsed.data,
       publishedAt: parsed.data.publishedAt ? new Date(parsed.data.publishedAt) : parsed.data.publishedAt === null ? null : undefined
@@ -52,10 +43,11 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   return NextResponse.json({ post });
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
-  const gate = await requireWrite();
-  if (gate.error) return gate.error;
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const gate = await authorize("blog:write");
+  if (!gate.authorized) return gate.response;
 
-  await prisma.blogPost.delete({ where: { id: params.id } });
+  const { id } = await params;
+  await prisma.blogPost.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }

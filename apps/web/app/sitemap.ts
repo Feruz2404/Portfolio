@@ -1,14 +1,8 @@
 import { MetadataRoute } from "next";
-import { prisma } from "@/lib/db";
+import { databaseIsConfigured, prisma } from "@/lib/db";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
-
-  const [projects, posts, members] = await Promise.all([
-    prisma.project.findMany({ where: { status: "COMPLETED" }, select: { slug: true, updatedAt: true } }).catch(() => []),
-    prisma.blogPost.findMany({ where: { status: "PUBLISHED" }, select: { slug: true, updatedAt: true } }).catch(() => []),
-    prisma.teamMember.findMany({ where: { isActive: true }, select: { slug: true, updatedAt: true } }).catch(() => [])
-  ]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${baseUrl}/`, lastModified: new Date() },
@@ -25,6 +19,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/privacy`, lastModified: new Date() },
     { url: `${baseUrl}/terms`, lastModified: new Date() }
   ];
+
+  if (!databaseIsConfigured) return staticRoutes;
+
+  const [projects, posts, members] = await Promise.all([
+    prisma.project.findMany({ where: { status: "COMPLETED" }, select: { slug: true, updatedAt: true } }).catch(() => []),
+    prisma.blogPost.findMany({ where: { status: "PUBLISHED" }, select: { slug: true, updatedAt: true } }).catch(() => []),
+    prisma.teamMember.findMany({ where: { isActive: true }, select: { slug: true, updatedAt: true } }).catch(() => [])
+  ]);
 
   return [
     ...staticRoutes,

@@ -1,9 +1,12 @@
 "use client";
 
 import { signIn } from "next-auth/react";
+import type { Route } from "next";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function LoginForm() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,16 +22,25 @@ export default function LoginForm() {
         const email = String(form.get("email") || "").trim();
         const password = String(form.get("password") || "");
 
-        const res = await signIn("credentials", {
-          email,
-          password,
-          redirect: true,
-          callbackUrl: "/admin/dashboard"
-        });
+        try {
+          const res = await signIn("credentials", {
+            email,
+            password,
+            redirect: false,
+            callbackUrl: "/admin/dashboard"
+          });
 
-        // next-auth will redirect; if it doesn't, show error
-        if (res?.error) setError("Invalid credentials");
-        setLoading(false);
+          if (res?.error) {
+            setError("Invalid credentials");
+          } else {
+            router.push("/admin/dashboard" as Route);
+            router.refresh();
+          }
+        } catch {
+          setError("Network error. Please try again.");
+        } finally {
+          setLoading(false);
+        }
       }}
     >
       <div className="space-y-2">

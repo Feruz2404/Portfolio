@@ -26,20 +26,25 @@ export default function BlogPostForm({ mode, post }: { mode: "create" | "edit"; 
           status: String(fd.get("status") || "DRAFT")
         };
 
-        const res = await fetch("/api/admin/blog" + (mode === "edit" ? `/${post!.id}` : ""), {
-          method: mode === "edit" ? "PUT" : "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(payload)
-        });
+        try {
+          const res = await fetch("/api/admin/blog" + (mode === "edit" ? `/${post!.id}` : ""), {
+            method: mode === "edit" ? "PUT" : "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(payload)
+          });
 
-        if (!res.ok) {
-          setError("Failed to save");
+          if (!res.ok) {
+            setError("Failed to save");
+            return;
+          }
+
+          router.push("/admin/blog");
+          router.refresh();
+        } catch {
+          setError("Network error. Please try again.");
+        } finally {
           setLoading(false);
-          return;
         }
-
-        router.push("/admin/blog");
-        router.refresh();
       }}
     >
       <Field label="Title">

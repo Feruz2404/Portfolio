@@ -1,8 +1,13 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import { prisma } from "@/lib/db";
+import { publicProjectSelect, publicProjectWhere } from "@/lib/publicData";
 
 export default async function ProjectsPage() {
-  const projects = await prisma.project.findMany({ orderBy: [{ featured: "desc" }, { createdAt: "desc" }] });
+  const projects = await prisma.project.findMany({
+    where: publicProjectWhere,
+    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+    select: publicProjectSelect
+  });
 
   return (
     <main className="min-h-dvh px-6 py-16">

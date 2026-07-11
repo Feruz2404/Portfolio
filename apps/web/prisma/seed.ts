@@ -2,8 +2,11 @@ import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 
 async function main() {
-  const email = process.env.SEED_ADMIN_EMAIL ?? "admin@example.com";
-  const password = process.env.SEED_ADMIN_PASSWORD ?? "ChangeMe123!";
+  const email = process.env.SEED_ADMIN_EMAIL;
+  const password = process.env.SEED_ADMIN_PASSWORD;
+
+  if (!email || !password) throw new Error("SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD must be configured before seeding.");
+  if (password.length < 12) throw new Error("SEED_ADMIN_PASSWORD must be at least 12 characters.");
 
   const hashedPassword = await bcrypt.hash(password, 12);
 
