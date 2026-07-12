@@ -9,6 +9,8 @@ export function getResend() {
   return resend;
 }
 
-export function getFromEmail() {
-  return getEnv().FROM_EMAIL ?? "hello@example.com";
+/** The verified sender address. Returns null when unset — callers must skip
+ *  sending rather than fall back to a placeholder. */
+export function getFromEmail(): string | null {
+  return getEnv().FROM_EMAIL ?? null;
 }

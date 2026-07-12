@@ -15,7 +15,8 @@ export default function AdminSidebar({ role }: { role: Role }) {
     { href: "/admin/contacts" as Route, label: "Contacts", perm: "contacts:write" },
     { href: "/admin/media" as Route, label: "Media", perm: "media:write" },
     { href: "/admin/analytics" as Route, label: "Analytics", perm: "analytics:read" },
-    { href: "/admin/users" as Route, label: "Users", perm: "users:write" }
+    { href: "/admin/users" as Route, label: "Users", perm: "users:write" },
+    { href: "/admin/settings" as Route, label: "Settings", perm: "users:write" }
   ];
 
   return (

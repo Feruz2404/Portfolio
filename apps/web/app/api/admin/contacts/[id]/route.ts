@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminApiContext } from "@/lib/adminAuth";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
+import { prismaErrorResponse } from "@/lib/api-errors";
 import { z } from "zod";
 
 const updateSchema = z
@@ -18,7 +19,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const { id } = await params;
   const contact = await prisma.contact.findUnique({
     where: { id },
-    include: { notes: true, emailHistory: true, manager: true }
+    include: { notes: true, emailHistory: true, manager: { select: { id: true, name: true, email: true } } }
   });
   if (!contact) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -36,14 +37,17 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 
   const { id } = await params;
-  const contact = await prisma.contact.update({ where: { id }, data: parsed.data });
-  await writeAuditLog({
-    action: "update",
-    entity: "Contact",
-    entityId: contact.id,
-    userId: gate.context.userId,
-    changes: parsed.data
-  });
-
-  return NextResponse.json({ contact });
+  try {
+    const contact = await prisma.contact.update({ where: { id }, data: parsed.data });
+    await writeAuditLog({
+      action: "update",
+      entity: "Contact",
+      entityId: contact.id,
+      userId: gate.context.userId,
+      changes: parsed.data
+    });
+    return NextResponse.json({ contact });
+  } catch (error) {
+    return prismaErrorResponse(error);
+  }
 }

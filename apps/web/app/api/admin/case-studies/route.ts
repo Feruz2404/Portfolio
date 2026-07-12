@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
-import type { Prisma } from "@prisma/client";
 import { getAdminApiContext } from "@/lib/adminAuth";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
+import { prismaErrorResponse, toJsonInput } from "@/lib/api-errors";
 import { z } from "zod";
+
+const metricsSchema = z
+  .array(z.object({ label: z.string().min(1).max(120), value: z.string().min(1).max(120) }))
+  .max(20);
+const timelineSchema = z
+  .array(z.object({ label: z.string().min(1).max(120), date: z.string().max(60).optional() }))
+  .max(30);
 
 const caseStudySchema = z.object({
   projectId: z.string().min(1),
@@ -13,9 +20,9 @@ const caseStudySchema = z.object({
   process: z.string().min(10),
   solution: z.string().min(10),
   outcome: z.string().min(10),
-  metrics: z.unknown().optional().nullable(),
-  timeline: z.unknown().optional().nullable(),
-  published: z.boolean().default(false)
+  metrics: metricsSchema.optional().nullable(),
+  timeline: timelineSchema.optional().nullable(),
+  published: z.boolean().default(false),
 });
 
 export async function GET() {
@@ -34,20 +41,20 @@ export async function POST(req: Request) {
   const parsed = caseStudySchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
-  const study = await prisma.caseStudy.create({
-    data: {
-      ...parsed.data,
-      metrics: parsed.data.metrics as Prisma.InputJsonValue,
-      timeline: parsed.data.timeline as Prisma.InputJsonValue
-    }
-  });
-  await writeAuditLog({
-    action: "create",
-    entity: "CaseStudy",
-    entityId: study.id,
-    userId: gate.context.userId,
-    changes: { projectId: study.projectId, published: study.published }
-  });
-
-  return NextResponse.json({ study }, { status: 201 });
+  const { metrics, timeline, ...rest } = parsed.data;
+  try {
+    const study = await prisma.caseStudy.create({
+      data: { ...rest, metrics: toJsonInput(metrics), timeline: toJsonInput(timeline) },
+    });
+    await writeAuditLog({
+      action: "create",
+      entity: "CaseStudy",
+      entityId: study.id,
+      userId: gate.context.userId,
+      changes: { projectId: study.projectId, published: study.published },
+    });
+    return NextResponse.json({ study }, { status: 201 });
+  } catch (error) {
+    return prismaErrorResponse(error);
+  }
 }

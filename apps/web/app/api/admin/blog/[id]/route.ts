@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminApiContext } from "@/lib/adminAuth";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
+import { prismaErrorResponse } from "@/lib/api-errors";
 import { z } from "zod";
 
 const schema = z.object({
@@ -38,29 +39,31 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
   const { id } = await params;
-  const post = await prisma.blogPost.update({
-    where: { id },
-    data: {
-      ...parsed.data,
-      ...(parsed.data.content ? { readingTime: calcReadingTime(parsed.data.content) } : {}),
-      publishedAt:
-        parsed.data.publishedAt !== undefined
-          ? parsed.data.publishedAt
-            ? new Date(parsed.data.publishedAt)
-            : null
-          : undefined
-    }
-  });
-
-  await writeAuditLog({
-    action: "update",
-    entity: "BlogPost",
-    entityId: post.id,
-    userId: gate.context.userId,
-    changes: parsed.data
-  });
-
-  return NextResponse.json({ post });
+  try {
+    const post = await prisma.blogPost.update({
+      where: { id },
+      data: {
+        ...parsed.data,
+        ...(parsed.data.content ? { readingTime: calcReadingTime(parsed.data.content) } : {}),
+        publishedAt:
+          parsed.data.publishedAt !== undefined
+            ? parsed.data.publishedAt
+              ? new Date(parsed.data.publishedAt)
+              : null
+            : undefined
+      }
+    });
+    await writeAuditLog({
+      action: "update",
+      entity: "BlogPost",
+      entityId: post.id,
+      userId: gate.context.userId,
+      changes: parsed.data
+    });
+    return NextResponse.json({ post });
+  } catch (error) {
+    return prismaErrorResponse(error);
+  }
 }
 
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -68,13 +71,16 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
   if (!gate.ok) return gate.response;
 
   const { id } = await params;
-  await prisma.blogPost.delete({ where: { id } });
-  await writeAuditLog({
-    action: "delete",
-    entity: "BlogPost",
-    entityId: id,
-    userId: gate.context.userId
-  });
-
-  return NextResponse.json({ ok: true });
+  try {
+    await prisma.blogPost.delete({ where: { id } });
+    await writeAuditLog({
+      action: "delete",
+      entity: "BlogPost",
+      entityId: id,
+      userId: gate.context.userId
+    });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return prismaErrorResponse(error);
+  }
 }

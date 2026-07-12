@@ -103,6 +103,9 @@ model Project {
   industry     String?
   technologies String[]
   screenshots  String[]
+  // Per-locale overrides for text fields ({ en?: {...}, ru?: {...} }); base
+  // columns above hold the default-locale (uz) content. See lib/content.ts.
+  translations Json?
   videoUrl     String?
   liveUrl      String?
   githubUrl    String?
@@ -146,9 +149,13 @@ model TeamMember {
   fullName       String
   slug           String   @unique
   position       String
+  department     String?
   avatar         String?
+  shortBio       String?  @db.Text
   bio            String?  @db.Text
   skills         String[]
+  // Per-locale overrides for position/department/shortBio/bio. See lib/content.ts.
+  translations   Json?
   githubUrl      String?
   linkedinUrl    String?
   telegramUrl    String?
@@ -182,6 +189,8 @@ model BlogPost {
   excerpt     String?    @db.Text
   content     String     @db.Text
   coverImage  String?
+  // Per-locale overrides for title/excerpt/content. See lib/content.ts.
+  translations Json?
   status      BlogStatus @default(DRAFT)
   publishedAt DateTime?
   views       Int        @default(0)
@@ -321,6 +330,8 @@ model Service {
   description String   @db.Text
   icon        String?
   features    String[]
+  // Per-locale overrides for title/description/features. See lib/content.ts.
+  translations Json?
   priceFrom   Int?
   priceTo     Int?
   currency    String   @default("USD")
@@ -408,4 +419,13 @@ model AuditLog {
   @@index([userId])
   @@index([entity])
   @@index([createdAt])
+}
+
+/// Site-wide, admin-managed configuration (contact email, social links,
+/// availability). Key/value so new settings don't need a migration.
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
 }

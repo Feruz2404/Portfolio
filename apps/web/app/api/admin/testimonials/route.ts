@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminApiContext } from "@/lib/adminAuth";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
+import { prismaErrorResponse } from "@/lib/api-errors";
 import { z } from "zod";
 
 const testimonialSchema = z.object({
@@ -32,14 +33,17 @@ export async function POST(req: Request) {
   const parsed = testimonialSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
-  const testimonial = await prisma.testimonial.create({ data: parsed.data });
-  await writeAuditLog({
-    action: "create",
-    entity: "Testimonial",
-    entityId: testimonial.id,
-    userId: gate.context.userId,
-    changes: { name: testimonial.name, approved: testimonial.approved }
-  });
-
-  return NextResponse.json({ testimonial }, { status: 201 });
+  try {
+    const testimonial = await prisma.testimonial.create({ data: parsed.data });
+    await writeAuditLog({
+      action: "create",
+      entity: "Testimonial",
+      entityId: testimonial.id,
+      userId: gate.context.userId,
+      changes: { name: testimonial.name, approved: testimonial.approved }
+    });
+    return NextResponse.json({ testimonial }, { status: 201 });
+  } catch (error) {
+    return prismaErrorResponse(error);
+  }
 }

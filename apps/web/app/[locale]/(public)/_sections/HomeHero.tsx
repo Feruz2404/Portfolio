@@ -1,118 +1,98 @@
 "use client";
 
-import { motion } from "framer-motion";
-import dynamic from "next/dynamic";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { Link } from "@/lib/i18n/navigation";
-import { fadeInUp, staggerContainer } from "@/components/animations/variants";
-
-const HeroScene = dynamic(() => import("@/components/3d/HeroScene"), { ssr: false });
-
-const stats = [
-  { key: "s_projects", number: "50+" },
-  { key: "s_experience", number: "5+" },
-  { key: "s_languages", number: "3" }
-];
-
-const servicesTicker = [
-  "WEB DEVELOPMENT",
-  "MOBILE APPS",
-  "UI/UX DESIGN",
-  "DATABASE ARCHITECTURE",
-  "API DEVELOPMENT",
-  "CLOUD INFRASTRUCTURE"
-];
+import Hero3D from "@/components/3d/Hero3D";
+import { ButtonLink } from "@/components/ui/Button";
+import { tokens } from "@/lib/design/tokens";
 
 export default function HomeHero() {
   const t = useTranslations("hero");
-  const home = useTranslations("home");
+  const reduce = useReducedMotion();
+
+  const container: Variants = {
+    hidden: {},
+    visible: { transition: { staggerChildren: reduce ? 0 : 0.08, delayChildren: reduce ? 0 : 0.05 } },
+  };
+  const item: Variants = reduce
+    ? { hidden: {}, visible: {} }
+    : {
+        hidden: { opacity: 0, y: 18 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: tokens.motion.easeArray } },
+      };
+
+  const signals = [t("signalTrilingual"), t("signalDiscipline"), t("signalOpen")];
 
   return (
-    <>
-      <section className="relative grid min-h-screen grid-cols-1 items-center overflow-hidden lg:grid-cols-2">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/30 via-purple-950/20 to-cyan-950/30" />
+    <section className="relative overflow-hidden">
+      {/* Faint schematic grid */}
+      <div className="atelier-grid pointer-events-none absolute inset-0 opacity-30" aria-hidden />
 
-        <motion.div
-          className="relative z-10 flex flex-col justify-center px-6 pb-20 md:px-12 lg:px-20"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.div variants={fadeInUp} className="mb-6 flex items-center gap-2">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-indigo-500" />
+      {/* Full-bleed 3D background (Spline). Poster on SSR / reduced-motion / mobile. */}
+      <div className="absolute inset-0" aria-hidden>
+        <Hero3D />
+      </div>
+
+      {/* Readability scrims over the scene so the copy stays legible. */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        aria-hidden
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(5,7,10,0.95) 0%, rgba(5,7,10,0.82) 32%, rgba(5,7,10,0.42) 58%, rgba(5,7,10,0.08) 100%)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-40"
+        aria-hidden
+        style={{ background: "linear-gradient(to top, rgba(5,7,10,1), rgba(5,7,10,0))" }}
+      />
+
+      {/* Copy over the scene */}
+      <div className="container-wide relative z-raised flex min-h-[calc(100dvh-4rem)] items-center py-16">
+        <motion.div variants={container} initial="hidden" animate="visible" className="max-w-2xl">
+          <motion.div
+            variants={item}
+            className="inline-flex items-center gap-2 rounded-full border border-line bg-ink-950/50 px-3 py-1.5 text-sm text-bone-muted backdrop-blur-sm"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-pulse-ring rounded-full bg-accent" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
             </span>
-            <span className="text-sm font-medium tracking-wide text-indigo-300">{t("available")}</span>
+            {t("availability")}
           </motion.div>
 
           <motion.h1
-            variants={fadeInUp}
-            className="text-5xl font-black leading-[0.95] tracking-tight sm:text-6xl lg:text-8xl"
+            variants={item}
+            className="mt-6 text-6xl font-semibold leading-[0.98] tracking-tight text-bone md:text-7xl"
           >
-            <span className="block text-white">{t("heading1")}</span>
-            <span className="gradient-text block">{t("heading2")}</span>
-            <span className="block text-white">{t("heading3")}</span>
+            {t("headingLine1")} {t("headingLine2")}{" "}
+            <span className="text-gradient-accent">{t("headingAccent")}</span> {t("headingLine3")}
           </motion.h1>
 
-          <motion.p variants={fadeInUp} className="mt-6 max-w-md text-base leading-relaxed text-white/60 md:text-lg">
+          <motion.p variants={item} className="mt-6 max-w-xl text-base leading-relaxed text-bone-muted md:text-lg">
             {t("subtitle")}
           </motion.p>
 
-          <motion.div variants={fadeInUp} className="mt-8 grid grid-cols-3 gap-4 md:gap-8">
-            {stats.map((stat) => (
-              <div key={stat.key}>
-                <div className="gradient-text text-2xl font-black md:text-3xl">{stat.number}</div>
-                <div className="mt-1 text-xs tracking-wide text-white/40">{home(stat.key)}</div>
-              </div>
-            ))}
-          </motion.div>
-
-          <motion.div variants={fadeInUp} className="mt-10 flex flex-wrap gap-4">
-            <Link
-              href="/projects"
-              className="inline-flex rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-indigo-500"
-            >
+          <motion.div variants={item} className="mt-9 flex flex-wrap gap-3">
+            <ButtonLink href="/projects" size="lg">
               {t("viewProjects")}
-            </Link>
-            <Link
-              href="/contact"
-              className="inline-flex rounded-full border border-white/20 px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:border-white/40"
-            >
+            </ButtonLink>
+            <ButtonLink href="/contact" size="lg" variant="secondary">
               {t("contactUs")}
-            </Link>
+            </ButtonLink>
           </motion.div>
 
-          <motion.div variants={fadeInUp} className="absolute bottom-8 left-1/2 -translate-x-1/2 lg:left-20 lg:translate-x-0">
-            <div className="flex flex-col items-center gap-2 animate-bounce">
-              <span className="text-[10px] uppercase tracking-widest text-white/30">{t("scroll")}</span>
-              <svg className="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
-            </div>
-          </motion.div>
+          <motion.ul variants={item} className="mt-12 flex flex-wrap gap-x-6 gap-y-3">
+            {signals.map((signal) => (
+              <li key={signal} className="flex items-center gap-2 font-mono text-2xs uppercase tracking-wider text-bone-faint">
+                <span aria-hidden className="h-1 w-1 rounded-full bg-accent" />
+                {signal}
+              </li>
+            ))}
+          </motion.ul>
         </motion.div>
-
-        <div className="relative h-[50vh] lg:h-screen">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="aspect-square w-[120%] rounded-full bg-gradient-to-br from-indigo-600/10 via-purple-600/5 to-cyan-600/10 blur-3xl" />
-          </div>
-          <div className="absolute inset-0">
-            <HeroScene />
-          </div>
-        </div>
-      </section>
-
-      <section className="overflow-hidden border-y border-white/10 bg-black/50 py-4">
-        <div className="flex gap-8 whitespace-nowrap px-4 animate-marquee">
-          {[...servicesTicker, ...servicesTicker].map((item, index) => (
-            <span key={`${item}-${index}`} className="flex items-center gap-3 text-sm font-bold tracking-widest text-white/20">
-              {item}
-              <span className="text-xs text-indigo-500">*</span>
-            </span>
-          ))}
-        </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 }

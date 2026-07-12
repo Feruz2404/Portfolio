@@ -1,32 +1,21 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/server-auth";
-import AdminSidebar from "@/components/admin/layout/AdminSidebar";
-import AdminHeader from "@/components/admin/layout/AdminHeader";
+import type { Metadata } from "next";
+import { fontVariables } from "@/lib/fonts";
+import "../globals.css";
 
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Admin — Feruz",
+  robots: { index: false, follow: false },
+};
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth();
-  const user = session?.user;
-
-  if (!user) {
-    redirect("/admin/login");
-  }
-
-  const role = user.role;
-  if (!role) {
-    redirect("/admin/unauthorized");
-  }
-
+/**
+ * Root layout for the (non-localized) /admin branch. Renders html/body so the
+ * admin area is a self-contained root — the login page lives directly under it
+ * (no auth gate), while the authed panel + chrome live in the (panel) group.
+ */
+export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-dvh bg-surface-00">
-      <div className="mx-auto grid max-w-[1400px] grid-cols-[260px_1fr] gap-0">
-        <AdminSidebar role={role} />
-        <div className="min-w-0">
-          <AdminHeader />
-          <div className="p-6">{children}</div>
-        </div>
-      </div>
-    </div>
+    <html lang="en" className={fontVariables} suppressHydrationWarning>
+      <body className="min-h-dvh bg-ink-950 font-body text-bone antialiased">{children}</body>
+    </html>
   );
 }

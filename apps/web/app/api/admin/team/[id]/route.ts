@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminApiContext } from "@/lib/adminAuth";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
+import { prismaErrorResponse } from "@/lib/api-errors";
 import { z } from "zod";
 
 const updateSchema = z.object({
@@ -41,16 +42,19 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
   const { id } = await params;
-  const member = await prisma.teamMember.update({ where: { id }, data: parsed.data });
-  await writeAuditLog({
-    action: "update",
-    entity: "TeamMember",
-    entityId: member.id,
-    userId: gate.context.userId,
-    changes: parsed.data
-  });
-
-  return NextResponse.json({ member });
+  try {
+    const member = await prisma.teamMember.update({ where: { id }, data: parsed.data });
+    await writeAuditLog({
+      action: "update",
+      entity: "TeamMember",
+      entityId: member.id,
+      userId: gate.context.userId,
+      changes: parsed.data
+    });
+    return NextResponse.json({ member });
+  } catch (error) {
+    return prismaErrorResponse(error);
+  }
 }
 
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -58,13 +62,16 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
   if (!gate.ok) return gate.response;
 
   const { id } = await params;
-  await prisma.teamMember.delete({ where: { id } });
-  await writeAuditLog({
-    action: "delete",
-    entity: "TeamMember",
-    entityId: id,
-    userId: gate.context.userId
-  });
-
-  return NextResponse.json({ ok: true });
+  try {
+    await prisma.teamMember.delete({ where: { id } });
+    await writeAuditLog({
+      action: "delete",
+      entity: "TeamMember",
+      entityId: id,
+      userId: gate.context.userId
+    });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return prismaErrorResponse(error);
+  }
 }

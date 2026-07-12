@@ -1,38 +1,28 @@
-import { MetadataRoute } from "next";
-import { prisma } from "@/lib/db";
-import { getSiteUrl } from "@/lib/env";
+import type { MetadataRoute } from "next";
+import { locales, defaultLocale } from "@/lib/i18n/config";
+import { absoluteUrl, localizedPath } from "@/lib/seo";
+import { getProjectSlugs, getPostSlugs, getTeamSlugs } from "@/lib/content";
+
+const STATIC_PATHS = ["/", "/about", "/projects", "/team", "/services", "/blog", "/contact", "/privacy", "/terms"];
+
+/** One entry per path with hreflang alternates for uz / en / ru. */
+function entry(path: string, lastModified = new Date()): MetadataRoute.Sitemap[number] {
+  const languages: Record<string, string> = {};
+  for (const l of locales) languages[l] = absoluteUrl(localizedPath(l, path));
+  return {
+    url: absoluteUrl(localizedPath(defaultLocale, path)),
+    lastModified,
+    alternates: { languages },
+  };
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = getSiteUrl();
-
-  const staticRoutes: MetadataRoute.Sitemap = [
-    { url: `${baseUrl}/`,           lastModified: new Date() },
-    { url: `${baseUrl}/about`,      lastModified: new Date() },
-    { url: `${baseUrl}/projects`,   lastModified: new Date() },
-    { url: `${baseUrl}/team`,       lastModified: new Date() },
-    { url: `${baseUrl}/services`,   lastModified: new Date() },
-    { url: `${baseUrl}/case-studies`, lastModified: new Date() },
-    { url: `${baseUrl}/testimonials`, lastModified: new Date() },
-    { url: `${baseUrl}/blog`,       lastModified: new Date() },
-    { url: `${baseUrl}/career`,     lastModified: new Date() },
-    { url: `${baseUrl}/contact`,    lastModified: new Date() },
-    { url: `${baseUrl}/media-kit`,  lastModified: new Date() },
-    { url: `${baseUrl}/privacy`,    lastModified: new Date() },
-    { url: `${baseUrl}/terms`,      lastModified: new Date() },
-  ];
-
-  if (!process.env.DATABASE_URL) return staticRoutes;
-
-  const [projects, posts, members] = await Promise.all([
-    prisma.project.findMany({ where: { status: "COMPLETED" }, select: { slug: true, updatedAt: true } }).catch(() => []),
-    prisma.blogPost.findMany({ where: { status: "PUBLISHED"  }, select: { slug: true, updatedAt: true } }).catch(() => []),
-    prisma.teamMember.findMany({ where: { isActive: true },    select: { slug: true, updatedAt: true } }).catch(() => []),
-  ]);
+  const [projects, posts, members] = await Promise.all([getProjectSlugs(), getPostSlugs(), getTeamSlugs()]);
 
   return [
-    ...staticRoutes,
-    ...projects.map((p) => ({ url: `${baseUrl}/projects/${p.slug}`,   lastModified: p.updatedAt })),
-    ...posts.map((p)    => ({ url: `${baseUrl}/blog/${p.slug}`,       lastModified: p.updatedAt })),
-    ...members.map((m)  => ({ url: `${baseUrl}/team/${m.slug}`,       lastModified: m.updatedAt })),
+    ...STATIC_PATHS.map((p) => entry(p)),
+    ...projects.map((p) => entry(`/projects/${p.slug}`)),
+    ...posts.map((p) => entry(`/blog/${p.slug}`)),
+    ...members.map((m) => entry(`/team/${m.slug}`)),
   ];
 }
