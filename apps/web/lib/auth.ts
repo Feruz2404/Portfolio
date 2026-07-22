@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { isLoginLocked, recordLoginFailure, clearLoginFailures } from "@/lib/rate-limit";
 import { getAuthSecret } from "@/lib/env";
 
 const credentialsSchema = z.object({
@@ -17,7 +18,9 @@ function isRole(value: unknown): value is Role {
 }
 
 export const authOptions: NextAuthConfig = {
-  adapter: PrismaAdapter(prisma),
+  // The global `omit` (lib/db.ts) narrows the client type; the adapter never
+  // needs the hash, so cast at this boundary to the adapter's expected client.
+  adapter: PrismaAdapter(prisma as unknown as Parameters<typeof PrismaAdapter>[0]),
   session: { strategy: "jwt" },
   providers: [
     Credentials({
@@ -25,16 +28,35 @@ export const authOptions: NextAuthConfig = {
         email:    { label: "Email",    type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const parsed = credentialsSchema.safeParse(credentials);
         if (!parsed.success) return null;
 
-        const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
-        if (!user?.hashedPassword) return null;
+        // Throttle brute force by email + IP (failures only; success clears it).
+        const ip =
+          request?.headers?.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+          request?.headers?.get("x-real-ip") ??
+          "unknown";
+        const throttleKey = `login:${parsed.data.email.toLowerCase()}:${ip}`;
+        if (isLoginLocked(throttleKey)) return null;
+
+        // Opt back into the globally-omitted hash for credential verification.
+        const user = await prisma.user.findUnique({
+          where: { email: parsed.data.email },
+          omit: { hashedPassword: false }
+        });
+        if (!user?.hashedPassword) {
+          recordLoginFailure(throttleKey);
+          return null;
+        }
 
         const ok = await bcrypt.compare(parsed.data.password, user.hashedPassword);
-        if (!ok) return null;
+        if (!ok) {
+          recordLoginFailure(throttleKey);
+          return null;
+        }
 
+        clearLoginFailures(throttleKey);
         return {
           id:    user.id,
           email: user.email,

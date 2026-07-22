@@ -30,3 +30,26 @@ export function getClientIp(req: Request) {
     "unknown"
   );
 }
+
+// ── Failed-login lockout (counts failures only; success clears them) ─────────
+const loginFailures = new Map<string, { count: number; resetAt: number }>();
+
+export function isLoginLocked(key: string, max = 8) {
+  const bucket = loginFailures.get(key);
+  if (!bucket || bucket.resetAt <= Date.now()) return false;
+  return bucket.count >= max;
+}
+
+export function recordLoginFailure(key: string, windowMs = 15 * 60 * 1000) {
+  const now = Date.now();
+  const bucket = loginFailures.get(key);
+  if (!bucket || bucket.resetAt <= now) {
+    loginFailures.set(key, { count: 1, resetAt: now + windowMs });
+    return;
+  }
+  bucket.count += 1;
+}
+
+export function clearLoginFailures(key: string) {
+  loginFailures.delete(key);
+}

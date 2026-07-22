@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminApiContext } from "@/lib/adminAuth";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
+import { prismaErrorResponse } from "@/lib/api-errors";
 import { z } from "zod";
 
 const mediaSchema = z.object({
@@ -30,14 +31,17 @@ export async function POST(req: Request) {
   const parsed = mediaSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
-  const item = await prisma.media.create({ data: parsed.data });
-  await writeAuditLog({
-    action: "create",
-    entity: "Media",
-    entityId: item.id,
-    userId: gate.context.userId,
-    changes: { filename: item.filename, mimeType: item.mimeType }
-  });
-
-  return NextResponse.json({ media: item }, { status: 201 });
+  try {
+    const item = await prisma.media.create({ data: parsed.data });
+    await writeAuditLog({
+      action: "create",
+      entity: "Media",
+      entityId: item.id,
+      userId: gate.context.userId,
+      changes: { filename: item.filename, mimeType: item.mimeType }
+    });
+    return NextResponse.json({ media: item }, { status: 201 });
+  } catch (error) {
+    return prismaErrorResponse(error);
+  }
 }

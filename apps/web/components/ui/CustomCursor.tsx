@@ -8,8 +8,7 @@ export default function CustomCursor() {
   useEffect(() => {
     const canUseCustomCursor =
       window.matchMedia('(pointer: fine)').matches &&
-      !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
-      !window.location.pathname.startsWith('/admin')
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     if (!canUseCustomCursor) return
 
@@ -38,47 +37,38 @@ export default function CustomCursor() {
     rafId = requestAnimationFrame(animate)
 
     document.body.classList.add('has-custom-cursor')
-    const interactiveSelector = 'a, button, [role="button"]'
-    const inputSelector = 'input, textarea, select, [contenteditable="true"]'
-    const onPointerOver = (event: PointerEvent) => {
-      const target = event.target
-      if (!(target instanceof Element)) return
-
-      if (target.closest(inputSelector)) {
-        dot.style.opacity = '0'
-        ring.style.opacity = '0'
-        return
-      }
-
-      if (target.closest(interactiveSelector)) {
-        dot.style.transform = 'scale(3)'
-      }
+    const onEnter = () => { dot.style.transform = 'scale(3)' }
+    const onLeave = () => { dot.style.transform = 'scale(1)' }
+    const onTextInputEnter = () => {
+      dot.style.opacity = '0'
+      ring.style.opacity = '0'
     }
-
-    const onPointerOut = (event: PointerEvent) => {
-      const target = event.target
-      if (!(target instanceof Element)) return
-
-      if (target.closest(inputSelector)) {
-        dot.style.opacity = '1'
-        ring.style.opacity = '1'
-        return
-      }
-
-      if (target.closest(interactiveSelector)) {
-        dot.style.transform = 'scale(1)'
-      }
+    const onTextInputLeave = () => {
+      dot.style.opacity = '1'
+      ring.style.opacity = '1'
     }
 
     document.addEventListener('mousemove', onMove)
-    document.addEventListener('pointerover', onPointerOver)
-    document.addEventListener('pointerout', onPointerOut)
+
+    const bind = (el: HTMLElement) => {
+      if (!el.dataset.cursorBound) {
+        const isTextInput = el.matches('input, textarea, select, [contenteditable="true"]')
+        el.addEventListener('mouseenter', isTextInput ? onTextInputEnter : onEnter)
+        el.addEventListener('mouseleave', isTextInput ? onTextInputLeave : onLeave)
+        el.dataset.cursorBound = 'true'
+      }
+    }
+    document.querySelectorAll<HTMLElement>('a, button, [role="button"], input, textarea, select, [contenteditable="true"]').forEach(bind)
+
+    const observer = new MutationObserver(() => {
+      document.querySelectorAll<HTMLElement>('a, button, [role="button"], input, textarea, select, [contenteditable="true"]').forEach(bind)
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
 
     return () => {
       document.body.classList.remove('has-custom-cursor')
       document.removeEventListener('mousemove', onMove)
-      document.removeEventListener('pointerover', onPointerOver)
-      document.removeEventListener('pointerout', onPointerOut)
+      observer.disconnect()
       cancelAnimationFrame(rafId)
     }
   }, [])

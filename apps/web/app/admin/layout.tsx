@@ -1,15 +1,23 @@
-import { auth } from "@/lib/server-auth";
-import AdminShell from "@/components/admin/layout/AdminShell";
-import type { AdminRole } from "@/components/admin/layout/AdminSidebar";
+import type { Metadata } from "next";
+import { fontVariables } from "@/lib/fonts";
+import { getSiteUrl } from "@/lib/env";
+import "../globals.css";
 
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
+  title: "Admin — Feruz",
+  robots: { index: false, follow: false },
+};
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth();
-
+/**
+ * Root layout for the (non-localized) /admin branch. Renders html/body so the
+ * admin area is a self-contained root — the login page lives directly under it
+ * (no auth gate), while the authed panel + chrome live in the (panel) group.
+ */
+export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AdminShell role={session?.user?.role as AdminRole | undefined} email={session?.user?.email}>
-      {children}
-    </AdminShell>
+    <html lang="en" className={fontVariables} suppressHydrationWarning>
+      <body className="min-h-dvh bg-ink-950 font-body text-bone antialiased">{children}</body>
+    </html>
   );
 }

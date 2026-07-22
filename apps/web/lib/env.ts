@@ -71,7 +71,7 @@ export function getSeedAdminCredentials() {
   }
 
   return {
-    email: env.SEED_ADMIN_EMAIL ?? "admin@example.com",
+    email: env.SEED_ADMIN_EMAIL ?? "admin@feruz.dev",
     password: env.SEED_ADMIN_PASSWORD ?? "ChangeMe123!",
   };
 }

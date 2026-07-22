@@ -17,8 +17,13 @@ export async function POST(req: Request) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
+  const from = getFromEmail();
+  if (!from || !process.env.RESEND_API_KEY) {
+    return NextResponse.json({ error: "Email is not configured (set RESEND_API_KEY and FROM_EMAIL)" }, { status: 503 });
+  }
+
   await getResend().emails.send({
-    from: getFromEmail(),
+    from,
     to: parsed.data.to,
     subject: parsed.data.subject,
     html: parsed.data.html

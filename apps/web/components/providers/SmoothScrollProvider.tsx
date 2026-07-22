@@ -8,8 +8,7 @@ export default function SmoothScrollProvider({ children }: { children: React.Rea
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const coarsePointer = window.matchMedia('(pointer: coarse)').matches
-    const adminRoute = window.location.pathname.startsWith('/admin')
-    if (prefersReducedMotion || coarsePointer || adminRoute) return
+    if (prefersReducedMotion || coarsePointer) return
 
     const lenis = new Lenis({
       duration: 1.2,

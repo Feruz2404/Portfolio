@@ -9,8 +9,7 @@
     "autoprefixer": "^10.4.20"
   },
   "overrides": {
-    "effect": "3.22.0",
-    "postcss": "8.5.21"
+    "effect": "3.22.0"
   },
   "scripts": {
     "dev": "npm --workspace apps/web run dev",
