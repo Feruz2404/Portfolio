@@ -11,7 +11,13 @@ export type AdminContext = {
   role: Role;
 };
 
-function toAdminContext(session: Session): AdminContext {
+function isRole(value: unknown): value is Role {
+  return typeof value === "string" && ["ADMIN", "EDITOR", "MANAGER", "VIEWER"].includes(value);
+}
+
+function toAdminContext(session: Session): AdminContext | null {
+  if (!session.user?.id || !isRole(session.user.role)) return null;
+
   return {
     session,
     userId: session.user.id,
@@ -26,6 +32,10 @@ export async function getAdminApiContext(permission: Permission) {
   }
 
   const context = toAdminContext(session);
+  if (!context) {
+    return { ok: false as const, response: NextResponse.json({ error: "Invalid session" }, { status: 401 }) };
+  }
+
   if (!hasPermission(context.role, permission)) {
     return { ok: false as const, response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
   }
@@ -44,6 +54,8 @@ export async function requireAdminPage(permission: Permission) {
   if (!session?.user) redirect("/admin/login");
 
   const context = toAdminContext(session);
+  if (!context) redirect("/admin/login");
+
   if (!hasPermission(context.role, permission)) redirect("/admin/unauthorized");
 
   return context;

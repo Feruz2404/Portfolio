@@ -12,7 +12,7 @@ export default async function TeamPage() {
   return (
     <main className="min-h-screen px-6 py-24">
       <div className="max-w-7xl mx-auto text-center mb-16">
-        <h1 className="text-5xl md:text-6xl font-black tracking-tight">Meet the <span className="gradient-text">Team</span></h1>
+        <h1 className="text-5xl md:text-6xl font-black tracking-normal">Meet the <span className="gradient-text">Team</span></h1>
         <p className="mt-4 text-white/50 max-w-lg mx-auto">The builders, designers, and strategists behind every great product.</p>
       </div>
 

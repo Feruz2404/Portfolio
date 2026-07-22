@@ -3,9 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --accent: #6366f1;
-  --accent-2: #8b5cf6;
-  --accent-3: #06b6d4;
+  --accent: #7df3e2;
+  --accent-2: #d8c58a;
+  --accent-3: #8c9fff;
+  --surface-00: #020208;
+  --surface-01: #05050d;
+  --surface-02: #0b0b13;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -13,10 +16,13 @@
 html { scroll-behavior: smooth; }
 
 body {
-  background: #000;
+  background:
+    radial-gradient(circle at 70% -10%, rgba(125, 243, 226, 0.09), transparent 32rem),
+    linear-gradient(180deg, #020208 0%, #05050d 42%, #020208 100%);
   color: #fff;
   font-family: var(--font-inter);
   overflow-x: hidden;
+  text-rendering: geometricPrecision;
 }
 
 body.has-custom-cursor,
@@ -68,16 +74,72 @@ body.has-custom-cursor .cursor-ring {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4);
+  background: linear-gradient(135deg, #ffffff, #7df3e2 42%, #d8c58a);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .glass {
-  background: rgba(255,255,255,0.03);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.026);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.09);
+}
+
+.section-shell {
+  width: min(100% - 3rem, 1280px);
+  margin-inline: auto;
+}
+
+.section-eyebrow {
+  color: rgba(125, 243, 226, 0.72);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.section-title {
+  color: #fff;
+  font-size: clamp(2.6rem, 6vw, 6.8rem);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 0.9;
+}
+
+.hero-scene-fallback {
+  background:
+    radial-gradient(circle at 52% 50%, rgba(125, 243, 226, 0.18), transparent 24%),
+    linear-gradient(135deg, rgba(140, 159, 255, 0.12), transparent 58%);
+}
+
+.hero-fallback-orbit,
+.hero-fallback-core {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+}
+
+.hero-fallback-orbit {
+  width: min(78vw, 560px);
+  aspect-ratio: 1 / 0.52;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.hero-fallback-orbit-a {
+  transform: translate(-50%, -50%) rotate(-18deg);
+}
+
+.hero-fallback-orbit-b {
+  transform: translate(-50%, -50%) rotate(29deg) scale(0.72);
+  border-color: rgba(125, 243, 226, 0.18);
+}
+
+.hero-fallback-core {
+  width: min(32vw, 210px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(125, 243, 226, 0.28);
+  background: radial-gradient(circle, rgba(125, 243, 226, 0.17), transparent 66%);
 }
 
 @keyframes marquee {

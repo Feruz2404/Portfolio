@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { getAuthSecret } from "@/lib/env";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -62,5 +63,5 @@ export const authOptions: NextAuthConfig = {
     signIn: "/admin/login",
     error:  "/admin/unauthorized",
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: getAuthSecret(),
 };

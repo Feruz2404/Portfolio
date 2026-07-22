@@ -1,9 +1,11 @@
-import { prisma } from "@/lib/db";
+import { disconnectPrisma, prisma } from "@/lib/db";
+import { getSeedAdminCredentials, requireEnv } from "@/lib/env";
 import bcrypt from "bcryptjs";
 
 async function main() {
-  const email = process.env.SEED_ADMIN_EMAIL ?? "admin@example.com";
-  const password = process.env.SEED_ADMIN_PASSWORD ?? "ChangeMe123!";
+  requireEnv("DATABASE_URL");
+
+  const { email, password } = getSeedAdminCredentials();
 
   const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -24,7 +26,7 @@ async function main() {
       data: {
         email: "writer@example.com",
         name: "Writer",
-        hashedPassword: await bcrypt.hash("writerpass123", 12),
+        hashedPassword: null,
         role: "EDITOR"
       }
     });
@@ -240,7 +242,7 @@ async function main() {
       where: { slug: "gaming-leaderboard" },
       update: {},
       create: {
-        title: "竞技通 - Gaming Leaderboard System",
+        title: "ArenaPulse - Gaming Leaderboard System",
         slug: "gaming-leaderboard",
         description: "Real-time competitive gaming platform with live leaderboards, tournaments for 100K+ gamers across multiple titles.",
         category: "Web Application",
@@ -265,7 +267,7 @@ async function main() {
         title: "Web Development",
         slug: "web-development",
         description: "Custom web applications built with cutting-edge technologies. From complex dashboards to content-rich platforms, we deliver performant, accessible, and beautiful solutions that scale.",
-        icon: "💻",
+        icon: "code",
         features: ["Next.js & React Applications", "Progressive Web Apps", "API Development & Architecture", "Database Design & Optimization", "Performance & SEO Audit", "Ongoing Maintenance"],
         priceFrom: 5000,
         priceTo: 100000,
@@ -281,7 +283,7 @@ async function main() {
         title: "Mobile App Development",
         slug: "mobile-app-development",
         description: "Native and cross-platform mobile applications for iOS and Android. We design beautiful interfaces and build robust backend systems to power your mobile experience.",
-        icon: "📱",
+        icon: "mobile",
         features: ["React Native & Flutter", "iOS & Android Native", "App Store Optimization", "Push Notifications", "Offline Support", "Analytics Integration"],
         priceFrom: 8000,
         priceTo: 80000,
@@ -297,7 +299,7 @@ async function main() {
         title: "UI/UX Design",
         slug: "ui-ux-design",
         description: "Human-centered design that converts. From wireframes to polished prototypes, every pixel is intentional. We research, test, and iterate to find the perfect user experience.",
-        icon: "🎨",
+        icon: "design",
         features: ["User Research & Personas", "Wireframing & Prototyping", "Design Systems", "Usability Testing", "Interaction Design", "Brand Identity"],
         priceFrom: 3000,
         priceTo: 50000,
@@ -313,7 +315,7 @@ async function main() {
         title: "Cloud Infrastructure",
         slug: "cloud-infrastructure",
         description: "Scalable, secure cloud architecture that grows with your business. We design deployment pipelines, monitoring systems, and infrastructure-as-code for zero-downtime operations.",
-        icon: "☁️",
+        icon: "cloud",
         features: ["AWS / GCP / Azure", "Container Orchestration", "CI/CD Pipelines", "Infrastructure as Code", "Monitoring & Alerting", "Cost Optimization"],
         priceFrom: 5000,
         priceTo: 60000,
@@ -329,7 +331,7 @@ async function main() {
         title: "Database Architecture",
         slug: "database-architecture",
         description: "Data modeling, migration strategies, and performance optimization. Whether SQL or NoSQL, we architect database systems that handle millions of records with ease.",
-        icon: "🗄️",
+        icon: "database",
         features: ["Schema Design", "Performance Tuning", "Migration Planning", "Read Replicas", "Backup & Recovery", "Data Warehouse"],
         priceFrom: 3000,
         priceTo: 40000,
@@ -345,7 +347,7 @@ async function main() {
         title: "Digital Consulting",
         slug: "digital-consulting",
         description: "Strategic technology consulting for digital transformation. We help businesses choose the right stack, plan migrations, and build roadmaps for sustainable growth.",
-        icon: "💡",
+        icon: "strategy",
         features: ["Technology Assessment", "Architecture Review", "Digital Roadmap", "Team Augmentation", "Code Audit", "Performance Benchmarking"],
         priceFrom: 2000,
         priceTo: 30000,
@@ -466,7 +468,7 @@ async function main() {
   ]);
 
   console.log(`\nDatabase seeded successfully!`);
-  console.log(`- 4 Projects (2 featured)`);
+  console.log(`- 7 Projects (2 featured)`);
   console.log(`- 3 Team Members`);
   console.log(`- 6 Services`);
   console.log(`- 3 Blog Posts (all published)`);
@@ -475,10 +477,10 @@ async function main() {
 
 main()
   .then(async () => {
-    await prisma.$disconnect();
+    await disconnectPrisma();
   })
   .catch(async (e) => {
     console.error(e);
-    await prisma.$disconnect();
+    await disconnectPrisma();
     process.exit(1);
   });

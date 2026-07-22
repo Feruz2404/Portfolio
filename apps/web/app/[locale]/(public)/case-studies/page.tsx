@@ -7,7 +7,7 @@ export default async function CaseStudiesPage() {
     return (
       <main className="min-h-dvh px-6 py-16">
         <div className="mx-auto max-w-5xl">
-          <h1 className="text-3xl font-semibold tracking-tight">Case Studies</h1>
+          <h1 className="text-3xl font-semibold tracking-normal">Case Studies</h1>
           <p className="mt-4 text-sm text-white/60">Case studies are coming soon.</p>
         </div>
       </main>
@@ -19,7 +19,7 @@ export default async function CaseStudiesPage() {
   return (
     <main className="min-h-dvh px-6 py-16">
       <div className="mx-auto max-w-5xl">
-        <h1 className="text-3xl font-semibold tracking-tight">Case Studies</h1>
+        <h1 className="text-3xl font-semibold tracking-normal">Case Studies</h1>
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           {studies.map((s) => (
             <Link key={s.id} href={`/case-studies/${s.project.slug}`} className="rounded-xl border border-white/10 bg-surface-01 p-5 hover:border-white/20">

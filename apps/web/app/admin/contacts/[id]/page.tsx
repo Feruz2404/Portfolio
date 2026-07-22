@@ -12,7 +12,7 @@ export default async function AdminContactDetailPage({ params }: { params: Promi
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{contact.name}</h1>
+        <h1 className="text-2xl font-semibold tracking-normal">{contact.name}</h1>
         <p className="mt-1 text-sm text-white/60">{contact.email}</p>
       </div>
 

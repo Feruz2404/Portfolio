@@ -12,7 +12,7 @@ export default async function EditBlogPostPage({ params }: { params: Promise<{ i
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Edit Blog Post</h1>
+      <h1 className="text-2xl font-semibold tracking-normal">Edit Blog Post</h1>
       <BlogPostForm mode="edit" post={post} />
     </div>
   );

@@ -1,170 +1,381 @@
-// Server Component – framer-motion is NOT allowed here.
-// Animations removed; use CSS transitions instead.
-import { Link } from "@/lib/i18n/navigation";
 import Image from "next/image";
+import { getLocale } from "next-intl/server";
+import { Link } from "@/lib/i18n/navigation";
 import { getEnv } from "@/lib/env";
 
-async function FeaturedProjects() {
-  if (!getEnv().DATABASE_URL) return null;
+type LocaleCode = "en" | "ru" | "uz";
 
-  const { prisma } = await import("@/lib/db");
-  const projects = await prisma.project.findMany({
-    where: { featured: true },
-    take: 4,
-    select: { id: true, title: true, slug: true, description: true, category: true, technologies: true, screenshots: true }
-  });
+type ProjectPreview = {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  category: string;
+  technologies: string[];
+  screenshots: string[];
+};
 
-  return (
-    <section className="py-24 px-6">
-      <h2 className="text-center text-3xl md:text-4xl font-black tracking-tight mb-16">Featured Projects</h2>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-        {projects.map((p) => (
-          <div key={p.id} className="group glass rounded-2xl overflow-hidden hover:scale-[1.03] transition-transform duration-300">
-            <div className="relative aspect-video overflow-hidden">
-              {p.screenshots?.[0] ? (
-                <Image src={p.screenshots[0]} alt={p.title ?? "Project"} fill sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-110" />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-indigo-600/20 to-purple-600/20" />
-              )}
-            </div>
-            <div className="p-5">
-              <span className="text-[10px] uppercase tracking-widest text-indigo-400 font-semibold">{p.category}</span>
-              <h3 className="mt-2 text-lg font-bold truncate">{p.title}</h3>
-              <p className="mt-1 text-xs text-white/50 line-clamp-2 leading-relaxed">{p.description}</p>
-              {p.technologies?.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1">
-                  {p.technologies.slice(0, 4).map((t) => (
-                    <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-white/60">{t}</span>
-                  ))}
-                </div>
-              )}
-              <Link href={`/projects/${p.slug}`} className="mt-4 inline-flex items-center text-sm font-medium text-indigo-400 group-hover:text-indigo-300 transition-colors">
-                View Project <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
-              </Link>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
+type HomeCopy = {
+  manifestoEyebrow: string;
+  manifestoTitle: string;
+  manifestoBody: string;
+  manifestoMetrics: Array<{ value: string; label: string }>;
+  projectsEyebrow: string;
+  projectsTitle: string;
+  projectsBody: string;
+  fallbackProjects: ProjectPreview[];
+  capabilitiesEyebrow: string;
+  capabilitiesTitle: string;
+  capabilities: Array<{ title: string; body: string; meta: string }>;
+  processEyebrow: string;
+  processTitle: string;
+  process: Array<{ step: string; title: string; body: string }>;
+  experienceEyebrow: string;
+  experienceTitle: string;
+  experienceBody: string;
+};
+
+const copy: Record<LocaleCode, HomeCopy> = {
+  en: {
+    manifestoEyebrow: "Manifesto",
+    manifestoTitle: "We build calm, durable digital systems for ambitious teams.",
+    manifestoBody:
+      "The work is not decoration. It is architecture, speed, trust, and a visual language strong enough to make complex products feel inevitable.",
+    manifestoMetrics: [
+      { value: "15ms", label: "interaction budgets" },
+      { value: "0", label: "template shortcuts" },
+      { value: "3x", label: "delivery clarity" },
+    ],
+    projectsEyebrow: "Selected work",
+    projectsTitle: "Products with infrastructure under the surface.",
+    projectsBody: "A curated look at dashboards, platforms, and operating systems designed for real business pressure.",
+    fallbackProjects: [
+      {
+        id: "aurora",
+        title: "Aurora Operations Console",
+        slug: "fintech-dashboard",
+        description: "A real-time financial command center with role-based workflows, auditability, and dense executive reporting.",
+        category: "Fintech platform",
+        technologies: ["Next.js", "PostgreSQL", "RBAC", "Analytics"],
+        screenshots: ["https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=800&fit=crop"],
+      },
+      {
+        id: "medline",
+        title: "MedLine Care Network",
+        slug: "healthcare-platform",
+        description: "A secure care coordination surface for clinical teams, patient journeys, and data-heavy daily operations.",
+        category: "Healthcare system",
+        technologies: ["React", "API design", "Compliance", "UX"],
+        screenshots: ["https://images.unsplash.com/photo-1576091160399-112ba8eafc09?w=1200&h=800&fit=crop"],
+      },
+      {
+        id: "signal",
+        title: "Signal Commerce Engine",
+        slug: "ecommerce-api",
+        description: "Transaction infrastructure built around inventory truth, automation, and high-throughput customer journeys.",
+        category: "Commerce backend",
+        technologies: ["Node.js", "Redis", "Prisma", "Scale"],
+        screenshots: ["https://images.unsplash.com/photo-1563013544-8f4206b344eb?w=1200&h=800&fit=crop"],
+      },
+    ],
+    capabilitiesEyebrow: "Capabilities",
+    capabilitiesTitle: "Strategy, interface, and backend treated as one product system.",
+    capabilities: [
+      { title: "Product architecture", body: "System maps, route models, database design, and delivery paths before code gets expensive.", meta: "01" },
+      { title: "Premium web interfaces", body: "Cinematic, accessible frontends with stable motion, real content hierarchy, and measured performance.", meta: "02" },
+      { title: "Admin operations", body: "Role-based dashboards, CRUD workflows, audit trails, validation, and safe operational defaults.", meta: "03" },
+      { title: "Performance engineering", body: "Rendering budgets, WebGL fallbacks, image strategy, build hygiene, and production readiness.", meta: "04" },
+    ],
+    processEyebrow: "Architecture",
+    processTitle: "A disciplined path from unclear ambition to shipped product.",
+    process: [
+      { step: "01", title: "Frame the system", body: "We define users, data, risk, permissions, and the product language before implementation." },
+      { step: "02", title: "Build the spine", body: "Auth, data access, routing, validation, and deployment constraints become the foundation." },
+      { step: "03", title: "Design the surface", body: "The interface gets editorial rhythm, motion restraint, and clear paths for repeat workflows." },
+      { step: "04", title: "Verify the story", body: "Build, lint, typecheck, browser smoke, and production-minded checks close the loop." },
+    ],
+    experienceEyebrow: "Team model",
+    experienceTitle: "Senior product engineering without the ceremony.",
+    experienceBody:
+      "You get the judgment of a full-stack architect, the eye of a product designer, and the discipline of production engineering in one compact workflow.",
+  },
+  ru: {
+    manifestoEyebrow: "Манифест",
+    manifestoTitle: "Мы создаём спокойные и надёжные цифровые системы для амбициозных команд.",
+    manifestoBody:
+      "Это не декор. Это архитектура, скорость, доверие и визуальный язык, который делает сложные продукты понятными и убедительными.",
+    manifestoMetrics: [
+      { value: "15 мс", label: "бюджет реакции" },
+      { value: "0", label: "шаблонных решений" },
+      { value: "3x", label: "ясность поставки" },
+    ],
+    projectsEyebrow: "Избранные проекты",
+    projectsTitle: "Продукты, под которыми есть настоящая инфраструктура.",
+    projectsBody: "Дашборды, платформы и операционные системы, рассчитанные на реальную нагрузку бизнеса.",
+    fallbackProjects: [
+      {
+        id: "aurora",
+        title: "Aurora Operations Console",
+        slug: "fintech-dashboard",
+        description: "Финансовый командный центр с ролями, аудитом и плотной управленческой аналитикой.",
+        category: "Fintech платформа",
+        technologies: ["Next.js", "PostgreSQL", "RBAC", "Analytics"],
+        screenshots: ["https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=800&fit=crop"],
+      },
+      {
+        id: "medline",
+        title: "MedLine Care Network",
+        slug: "healthcare-platform",
+        description: "Защищённая система координации для клинических команд, пациентов и ежедневных процессов.",
+        category: "Healthcare система",
+        technologies: ["React", "API design", "Compliance", "UX"],
+        screenshots: ["https://images.unsplash.com/photo-1576091160399-112ba8eafc09?w=1200&h=800&fit=crop"],
+      },
+      {
+        id: "signal",
+        title: "Signal Commerce Engine",
+        slug: "ecommerce-api",
+        description: "Транзакционная инфраструктура для инвентаря, автоматизации и высоконагруженных клиентских путей.",
+        category: "Commerce backend",
+        technologies: ["Node.js", "Redis", "Prisma", "Scale"],
+        screenshots: ["https://images.unsplash.com/photo-1563013544-8f4206b344eb?w=1200&h=800&fit=crop"],
+      },
+    ],
+    capabilitiesEyebrow: "Возможности",
+    capabilitiesTitle: "Стратегия, интерфейс и backend как единая продуктовая система.",
+    capabilities: [
+      { title: "Продуктовая архитектура", body: "Карта системы, маршруты, база данных и путь поставки до того, как код станет дорогим.", meta: "01" },
+      { title: "Премиальные интерфейсы", body: "Кинематографичные и доступные фронтенды с устойчивым движением и ясной иерархией.", meta: "02" },
+      { title: "Admin операции", body: "RBAC, CRUD, аудит, валидация и безопасные рабочие процессы для команды.", meta: "03" },
+      { title: "Performance engineering", body: "Бюджеты рендера, WebGL fallback, изображения, сборка и готовность к production.", meta: "04" },
+    ],
+    processEyebrow: "Архитектура",
+    processTitle: "Дисциплинированный путь от идеи к запущенному продукту.",
+    process: [
+      { step: "01", title: "Формируем систему", body: "Определяем пользователей, данные, риски, права и язык продукта до реализации." },
+      { step: "02", title: "Собираем основу", body: "Auth, данные, маршруты, валидация и деплой становятся фундаментом." },
+      { step: "03", title: "Проектируем поверхность", body: "Интерфейс получает ритм, сдержанное движение и понятные рабочие пути." },
+      { step: "04", title: "Проверяем историю", body: "Build, lint, typecheck, browser smoke и production-проверки закрывают цикл." },
+    ],
+    experienceEyebrow: "Модель команды",
+    experienceTitle: "Сеньорная продуктовая инженерия без лишней церемонии.",
+    experienceBody:
+      "Вы получаете мышление full-stack архитектора, взгляд продуктового дизайнера и дисциплину production-инженера в одном компактном процессе.",
+  },
+  uz: {
+    manifestoEyebrow: "Manifest",
+    manifestoTitle: "Ambitsiyali jamoalar uchun sokin, mustahkam raqamli tizimlar quramiz.",
+    manifestoBody:
+      "Bu bezak emas. Bu arxitektura, tezlik, ishonch va murakkab mahsulotlarni tabiiy his qildiradigan vizual til.",
+    manifestoMetrics: [
+      { value: "15 ms", label: "reaksiya budjeti" },
+      { value: "0", label: "shablon yondashuv" },
+      { value: "3x", label: "yetkazish aniqligi" },
+    ],
+    projectsEyebrow: "Tanlangan ishlar",
+    projectsTitle: "Tashqi ko'rinish ostida haqiqiy infratuzilma bor.",
+    projectsBody: "Biznes bosimiga tayyor dashboard, platforma va operatsion tizimlardan tanlangan namunalar.",
+    fallbackProjects: [
+      {
+        id: "aurora",
+        title: "Aurora Operations Console",
+        slug: "fintech-dashboard",
+        description: "Rollar, audit va rahbarlar uchun zich analitika bilan real vaqt moliyaviy boshqaruv markazi.",
+        category: "Fintech platforma",
+        technologies: ["Next.js", "PostgreSQL", "RBAC", "Analytics"],
+        screenshots: ["https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=800&fit=crop"],
+      },
+      {
+        id: "medline",
+        title: "MedLine Care Network",
+        slug: "healthcare-platform",
+        description: "Klinik jamoalar, bemor yo'llari va kundalik jarayonlar uchun xavfsiz koordinatsiya tizimi.",
+        category: "Healthcare tizim",
+        technologies: ["React", "API design", "Compliance", "UX"],
+        screenshots: ["https://images.unsplash.com/photo-1576091160399-112ba8eafc09?w=1200&h=800&fit=crop"],
+      },
+      {
+        id: "signal",
+        title: "Signal Commerce Engine",
+        slug: "ecommerce-api",
+        description: "Inventar, avtomatlashtirish va katta trafikdagi mijoz yo'llari uchun tranzaksiya infratuzilmasi.",
+        category: "Commerce backend",
+        technologies: ["Node.js", "Redis", "Prisma", "Scale"],
+        screenshots: ["https://images.unsplash.com/photo-1563013544-8f4206b344eb?w=1200&h=800&fit=crop"],
+      },
+    ],
+    capabilitiesEyebrow: "Imkoniyatlar",
+    capabilitiesTitle: "Strategiya, interfeys va backend bitta mahsulot tizimi sifatida.",
+    capabilities: [
+      { title: "Mahsulot arxitekturasi", body: "Tizim xaritasi, route modeli, data tuzilmasi va yetkazish yo'li kod qimmatlashmasidan oldin.", meta: "01" },
+      { title: "Premium web interfeyslar", body: "Kinematik, accessible frontendlar, barqaror motion va aniq kontent ierarxiyasi.", meta: "02" },
+      { title: "Admin operatsiyalar", body: "RBAC, CRUD, audit trail, validatsiya va jamoa uchun xavfsiz ish oqimlari.", meta: "03" },
+      { title: "Performance engineering", body: "Render budjetlari, WebGL fallback, image strategy, build hygiene va production tayyorgarlik.", meta: "04" },
+    ],
+    processEyebrow: "Arxitektura",
+    processTitle: "Noaniq ambitsiyadan ishga tushgan mahsulotgacha tartibli yo'l.",
+    process: [
+      { step: "01", title: "Tizimni ramkalaymiz", body: "Foydalanuvchi, data, risk, ruxsatlar va mahsulot tilini avval belgilaymiz." },
+      { step: "02", title: "Asosni quramiz", body: "Auth, data access, routing, validatsiya va deploy cheklovlari poydevorga aylanadi." },
+      { step: "03", title: "Yuzani loyihalaymiz", body: "Interfeys editorial ritm, sokin motion va takroriy ishlar uchun aniq yo'l oladi." },
+      { step: "04", title: "Hikoyani tekshiramiz", body: "Build, lint, typecheck, browser smoke va production tekshiruvlar tsiklni yopadi." },
+    ],
+    experienceEyebrow: "Jamoa modeli",
+    experienceTitle: "Ortiqcha marosimsiz senior product engineering.",
+    experienceBody:
+      "Siz bitta ixcham jarayonda full-stack arxitektor fikrini, product designer ko'zini va production engineer intizomini olasiz.",
+  },
+};
+
+function isLocaleCode(locale: string): locale is LocaleCode {
+  return locale === "en" || locale === "ru" || locale === "uz";
 }
 
-async function ServicesSection() {
-  if (!getEnv().DATABASE_URL) return null;
+async function getProjectPreviews(localeCopy: HomeCopy) {
+  if (!getEnv().DATABASE_URL) return localeCopy.fallbackProjects;
 
-  const { prisma } = await import("@/lib/db");
-  const services = await prisma.service.findMany({ where: { isActive: true }, take: 6, orderBy: { order: "asc" } });
-  if (!services.length) return null;
+  try {
+    const { prisma } = await import("@/lib/db");
+    const projects = await prisma.project.findMany({
+      where: { status: "COMPLETED" },
+      orderBy: [{ featured: "desc" }, { updatedAt: "desc" }],
+      take: 3,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        category: true,
+        technologies: true,
+        screenshots: true,
+      },
+    });
 
-  const iconEmojis = ["💻", "📱", "🎨", "☁️", "🗄️", "💡"];
-
-  return (
-    <section className="py-24 px-6 bg-gradient-to-b from-transparent via-indigo-950/10 to-transparent">
-      <h2 className="text-center text-3xl md:text-4xl font-black tracking-tight mb-16">What We Do</h2>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-        {services.map((s, i) => (
-          <div key={s.id} className="glass p-6 rounded-2xl group hover:-translate-y-1 transition-all duration-300">
-            <span className="text-3xl">{iconEmojis[i % iconEmojis.length]}</span>
-            <h3 className="mt-4 text-lg font-bold">{s.title}</h3>
-            <p className="mt-2 text-sm text-white/50 line-clamp-3 leading-relaxed">{s.description}</p>
-            <Link href="/services" className="mt-4 inline-flex items-center text-sm font-medium text-indigo-400 group-hover:text-indigo-300 transition-colors">
-              Learn more <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
-            </Link>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-async function TeamPreview() {
-  if (!getEnv().DATABASE_URL) return null;
-
-  const { prisma } = await import("@/lib/db");
-  const team = await prisma.teamMember.findMany({
-    where: { isActive: true },
-    take: 3,
-    select: { id: true, fullName: true, slug: true, position: true, avatar: true, githubUrl: true, linkedinUrl: true, telegramUrl: true }
-  });
-  if (!team.length) return null;
-
-  const initials = (name: string) => name.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase();
-
-  return (
-    <section className="py-24 px-6">
-      <h2 className="text-center text-3xl md:text-4xl font-black tracking-tight mb-16">The Team</h2>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-        {team.map((m) => (
-          <div key={m.id} className="glass p-6 rounded-2xl text-center hover:-translate-y-1 transition-all duration-300 group">
-            <div className="relative mx-auto mb-4 h-20 w-20 overflow-hidden rounded-full ring-2 ring-indigo-500/20 transition-all group-hover:ring-indigo-500/50">
-              {m.avatar ? (
-                <Image src={m.avatar} alt={m.fullName ?? "Team member"} fill sizes="80px" className="object-cover" />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold">{initials(m.fullName)}</div>
-              )}
-            </div>
-            <h3 className="font-bold">{m.fullName}</h3>
-            <p className="text-indigo-400 text-sm mt-1">{m.position}</p>
-            <div className="mt-4 flex justify-center gap-3">
-              {m.githubUrl && (
-                <a href={m.githubUrl} target="_blank" rel="noopener noreferrer" className="text-white/30 hover:text-white transition-colors">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                </a>
-              )}
-              {m.linkedinUrl && (
-                <a href={m.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-white/30 hover:text-white transition-colors">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.073-.925-2.073-2.073s.925-2.073 2.073-2.073 2.073.925 2.073 2.073-.925 2.073-2.073 2.073zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                </a>
-              )}
-              {m.telegramUrl && (
-                <a href={m.telegramUrl} target="_blank" rel="noopener noreferrer" className="text-white/30 hover:text-white transition-colors">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-                </a>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-async function TestimonialsSection() {
-  if (!getEnv().DATABASE_URL) return null;
-
-  const { prisma } = await import("@/lib/db");
-  const testimonials = await prisma.testimonial.findMany({
-    where: { approved: true },
-    take: 3,
-    select: { id: true, name: true, position: true, company: true, content: true }
-  });
-  if (!testimonials.length) return null;
-
-  return (
-    <section className="py-24 px-6">
-      <div className="max-w-7xl mx-auto grid sm:grid-cols-3 gap-6">
-        {testimonials.map((t) => (
-          <div key={t.id} className="glass p-6 rounded-2xl">
-            <span className="text-6xl leading-none gradient-text">&ldquo;</span>
-            <p className="mt-4 text-sm text-white/70 italic leading-relaxed">{t.content}</p>
-            <div className="mt-6 pt-4 border-t border-white/10">
-              <p className="font-semibold text-sm">{t.name}</p>
-              <p className="text-xs text-white/40 mt-1">{t.position} @ {t.company}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
+    return projects.length ? projects : localeCopy.fallbackProjects;
+  } catch {
+    return localeCopy.fallbackProjects;
+  }
 }
 
 export default async function ServerContent() {
+  const activeLocale = await getLocale();
+  const localeCopy = copy[isLocaleCode(activeLocale) ? activeLocale : "en"];
+  const projects = await getProjectPreviews(localeCopy);
+
   return (
     <>
-      <FeaturedProjects />
-      <ServicesSection />
-      <TeamPreview />
-      <TestimonialsSection />
+      <section className="section-shell grid gap-12 border-b border-white/10 py-24 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+        <div>
+          <p className="section-eyebrow">{localeCopy.manifestoEyebrow}</p>
+          <h2 className="section-title mt-5 max-w-3xl">{localeCopy.manifestoTitle}</h2>
+        </div>
+        <div className="space-y-8">
+          <p className="max-w-2xl text-lg leading-8 text-white/58">{localeCopy.manifestoBody}</p>
+          <div className="grid grid-cols-3 gap-px border border-white/10 bg-white/10">
+            {localeCopy.manifestoMetrics.map((metric) => (
+              <div key={metric.label} className="bg-[#05050d] p-5">
+                <div className="font-mono text-2xl text-white">{metric.value}</div>
+                <div className="mt-2 text-[0.66rem] uppercase tracking-[0.18em] text-white/40">{metric.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section-shell py-28">
+        <div className="mb-12 grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+          <div>
+            <p className="section-eyebrow">{localeCopy.projectsEyebrow}</p>
+            <h2 className="section-title mt-5">{localeCopy.projectsTitle}</h2>
+          </div>
+          <p className="max-w-xl text-base leading-7 text-white/56 lg:justify-self-end">{localeCopy.projectsBody}</p>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-3">
+          {projects.map((project, index) => (
+            <Link
+              key={project.id}
+              href={`/projects/${project.slug}`}
+              className="group relative min-h-[430px] overflow-hidden border border-white/10 bg-white/[0.025] p-5 transition-colors hover:border-teal-200/35"
+            >
+              <div className="relative aspect-[4/3] overflow-hidden bg-white/[0.03]">
+                {project.screenshots[0] ? (
+                  <Image
+                    src={project.screenshots[0]}
+                    alt={project.title}
+                    fill
+                    sizes="(min-width: 1024px) 33vw, 100vw"
+                    className="object-cover grayscale transition duration-700 group-hover:scale-105 group-hover:grayscale-0"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-[linear-gradient(135deg,rgba(125,243,226,0.18),rgba(255,255,255,0.03))]" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#020208] via-transparent to-transparent" />
+                <span className="absolute left-4 top-4 font-mono text-xs text-white/50">0{index + 1}</span>
+              </div>
+              <div className="pt-6">
+                <p className="text-[0.65rem] uppercase tracking-[0.22em] text-teal-200/68">{project.category}</p>
+                <h3 className="mt-3 text-2xl font-semibold leading-tight text-white">{project.title}</h3>
+                <p className="mt-4 line-clamp-3 text-sm leading-6 text-white/52">{project.description}</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {project.technologies.slice(0, 4).map((technology) => (
+                    <span key={technology} className="border border-white/10 px-2.5 py-1 text-[0.66rem] uppercase tracking-[0.14em] text-white/48">
+                      {technology}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-white/10 bg-[#05050b]">
+        <div className="section-shell grid gap-12 py-28 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="lg:sticky lg:top-28 lg:self-start">
+            <p className="section-eyebrow">{localeCopy.capabilitiesEyebrow}</p>
+            <h2 className="section-title mt-5">{localeCopy.capabilitiesTitle}</h2>
+          </div>
+          <div className="divide-y divide-white/10 border-y border-white/10">
+            {localeCopy.capabilities.map((item) => (
+              <article key={item.title} className="grid gap-6 py-8 md:grid-cols-[80px_1fr]">
+                <div className="font-mono text-sm text-teal-200/60">{item.meta}</div>
+                <div>
+                  <h3 className="text-2xl font-semibold text-white">{item.title}</h3>
+                  <p className="mt-3 max-w-2xl text-sm leading-7 text-white/54">{item.body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section-shell py-28">
+        <div className="mb-12 max-w-3xl">
+          <p className="section-eyebrow">{localeCopy.processEyebrow}</p>
+          <h2 className="section-title mt-5">{localeCopy.processTitle}</h2>
+        </div>
+        <div className="grid gap-px overflow-hidden border border-white/10 bg-white/10 lg:grid-cols-4">
+          {localeCopy.process.map((item) => (
+            <article key={item.step} className="min-h-[280px] bg-[#05050d] p-6">
+              <div className="font-mono text-sm text-teal-200/62">{item.step}</div>
+              <h3 className="mt-12 text-xl font-semibold text-white">{item.title}</h3>
+              <p className="mt-4 text-sm leading-7 text-white/50">{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="section-shell grid gap-10 border-t border-white/10 py-24 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+        <div>
+          <p className="section-eyebrow">{localeCopy.experienceEyebrow}</p>
+          <h2 className="section-title mt-5">{localeCopy.experienceTitle}</h2>
+        </div>
+        <div className="relative border border-white/10 bg-white/[0.025] p-8">
+          <div className="absolute left-8 top-0 h-px w-24 bg-teal-200/70" />
+          <p className="text-xl leading-9 text-white/66">{localeCopy.experienceBody}</p>
+        </div>
+      </section>
     </>
   );
 }

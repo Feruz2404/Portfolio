@@ -43,7 +43,7 @@ export default function HeroSection() {
             <span className="text-sm text-indigo-300 font-medium tracking-wide">Available for projects</span>
           </motion.div>
 
-          <motion.h1 variants={fadeInUp} className="text-5xl sm:text-6xl lg:text-8xl font-black leading-[0.95] tracking-tight">
+          <motion.h1 variants={fadeInUp} className="text-5xl sm:text-6xl lg:text-8xl font-black leading-[0.95] tracking-normal">
             <span className="block text-white">Building</span>
             <span className="gradient-text block">Digital</span>
             <span className="block text-white">Experiences</span>
@@ -71,8 +71,6 @@ export default function HeroSection() {
               Contact Us
             </Link>
           </motion.div>
-
-          {/* FIX: removed conflicting lg:left-auto – only lg:left-20 used */}
           <motion.div variants={fadeInUp} className="absolute bottom-8 left-1/2 -translate-x-1/2 lg:left-20 lg:translate-x-0">
             <div className="flex flex-col items-center gap-2 animate-bounce">
               <span className="text-[10px] text-white/30 tracking-widest uppercase">Scroll</span>

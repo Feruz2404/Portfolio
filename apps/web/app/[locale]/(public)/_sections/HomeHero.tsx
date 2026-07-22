@@ -3,24 +3,24 @@
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
+import { ArrowUpRight, CircleDot } from "lucide-react";
 import { Link } from "@/lib/i18n/navigation";
-import { fadeInUp, staggerContainer } from "@/components/animations/variants";
 
 const HeroScene = dynamic(() => import("@/components/3d/HeroScene"), { ssr: false });
 
 const stats = [
   { key: "s_projects", number: "50+" },
   { key: "s_experience", number: "5+" },
-  { key: "s_languages", number: "3" }
+  { key: "s_languages", number: "3" },
 ];
 
 const servicesTicker = [
-  "WEB DEVELOPMENT",
-  "MOBILE APPS",
-  "UI/UX DESIGN",
-  "DATABASE ARCHITECTURE",
-  "API DEVELOPMENT",
-  "CLOUD INFRASTRUCTURE"
+  "Product architecture",
+  "Next.js systems",
+  "Admin platforms",
+  "3D interfaces",
+  "Database design",
+  "Growth engineering",
 ];
 
 export default function HomeHero() {
@@ -29,86 +29,75 @@ export default function HomeHero() {
 
   return (
     <>
-      <section className="relative grid min-h-screen grid-cols-1 items-center overflow-hidden lg:grid-cols-2">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/30 via-purple-950/20 to-cyan-950/30" />
+      <section className="relative min-h-[92svh] overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_62%_35%,rgba(42,197,180,0.12),transparent_30%),linear-gradient(180deg,#020208_0%,#05030a_58%,#020208_100%)]">
+        <div className="absolute inset-0 opacity-[0.22] [background-image:linear-gradient(rgba(255,255,255,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:120px_120px]" />
+        <div className="absolute inset-y-0 right-0 w-full md:w-[72%]">
+          <HeroScene />
+        </div>
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,#020208_0%,rgba(2,2,8,0.88)_31%,rgba(2,2,8,0.46)_63%,rgba(2,2,8,0.18)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#020208] to-transparent" />
 
-        <motion.div
-          className="relative z-10 flex flex-col justify-center px-6 pb-20 md:px-12 lg:px-20"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.div variants={fadeInUp} className="mb-6 flex items-center gap-2">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-indigo-500" />
-            </span>
-            <span className="text-sm font-medium tracking-wide text-indigo-300">{t("available")}</span>
-          </motion.div>
-
-          <motion.h1
-            variants={fadeInUp}
-            className="text-5xl font-black leading-[0.95] tracking-tight sm:text-6xl lg:text-8xl"
+        <div className="relative z-10 mx-auto flex min-h-[92svh] max-w-7xl flex-col justify-center px-6 pb-16 pt-28 md:px-10 lg:px-12">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-4xl"
           >
-            <span className="block text-white">{t("heading1")}</span>
-            <span className="gradient-text block">{t("heading2")}</span>
-            <span className="block text-white">{t("heading3")}</span>
-          </motion.h1>
+            <div className="mb-8 inline-flex items-center gap-3 border border-white/12 bg-white/[0.03] px-4 py-2 text-xs uppercase tracking-[0.22em] text-white/68 backdrop-blur">
+              <CircleDot className="h-3.5 w-3.5 text-teal-300" aria-hidden="true" />
+              {t("available")}
+            </div>
 
-          <motion.p variants={fadeInUp} className="mt-6 max-w-md text-base leading-relaxed text-white/60 md:text-lg">
-            {t("subtitle")}
-          </motion.p>
+            <h1 className="max-w-5xl text-[clamp(3.8rem,10vw,9.4rem)] font-black leading-[0.82] tracking-normal text-white">
+              <span className="block">{t("heading1")}</span>
+              <span className="block text-white/92">{t("heading2")}</span>
+              <span className="block text-teal-100">{t("heading3")}</span>
+            </h1>
 
-          <motion.div variants={fadeInUp} className="mt-8 grid grid-cols-3 gap-4 md:gap-8">
-            {stats.map((stat) => (
-              <div key={stat.key}>
-                <div className="gradient-text text-2xl font-black md:text-3xl">{stat.number}</div>
-                <div className="mt-1 text-xs tracking-wide text-white/40">{home(stat.key)}</div>
+            <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,560px)_1fr] lg:items-end">
+              <p className="max-w-xl text-base leading-8 text-white/62 md:text-lg">{t("subtitle")}</p>
+
+              <div className="grid max-w-lg grid-cols-3 gap-px overflow-hidden border border-white/10 bg-white/10">
+                {stats.map((stat) => (
+                  <div key={stat.key} className="bg-[#05050d]/90 px-4 py-4">
+                    <div className="font-mono text-2xl font-semibold text-white md:text-3xl">{stat.number}</div>
+                    <div className="mt-2 text-[0.65rem] uppercase tracking-[0.18em] text-white/42">{home(stat.key)}</div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </motion.div>
+            </div>
 
-          <motion.div variants={fadeInUp} className="mt-10 flex flex-wrap gap-4">
-            <Link
-              href="/projects"
-              className="inline-flex rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-indigo-500"
-            >
-              {t("viewProjects")}
-            </Link>
-            <Link
-              href="/contact"
-              className="inline-flex rounded-full border border-white/20 px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:border-white/40"
-            >
-              {t("contactUs")}
-            </Link>
-          </motion.div>
-
-          <motion.div variants={fadeInUp} className="absolute bottom-8 left-1/2 -translate-x-1/2 lg:left-20 lg:translate-x-0">
-            <div className="flex flex-col items-center gap-2 animate-bounce">
-              <span className="text-[10px] uppercase tracking-widest text-white/30">{t("scroll")}</span>
-              <svg className="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
+            <div className="mt-10 flex flex-wrap items-center gap-3">
+              <Link
+                href="/projects"
+                className="group inline-flex items-center gap-2 bg-white px-5 py-3 text-sm font-semibold text-black transition-colors hover:bg-teal-100"
+              >
+                {t("viewProjects")}
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
+              </Link>
+              <Link
+                href="/contact"
+                className="inline-flex items-center border border-white/16 px-5 py-3 text-sm font-semibold text-white/84 transition-colors hover:border-white/36 hover:text-white"
+              >
+                {t("contactUs")}
+              </Link>
             </div>
           </motion.div>
-        </motion.div>
 
-        <div className="relative h-[50vh] lg:h-screen">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="aspect-square w-[120%] rounded-full bg-gradient-to-br from-indigo-600/10 via-purple-600/5 to-cyan-600/10 blur-3xl" />
-          </div>
-          <div className="absolute inset-0">
-            <HeroScene />
+          <div className="absolute bottom-7 left-6 hidden items-center gap-3 text-[0.65rem] uppercase tracking-[0.28em] text-white/32 md:flex lg:left-12">
+            <span className="h-px w-12 bg-white/22" />
+            {t("scroll")}
           </div>
         </div>
       </section>
 
-      <section className="overflow-hidden border-y border-white/10 bg-black/50 py-4">
-        <div className="flex gap-8 whitespace-nowrap px-4 animate-marquee">
+      <section className="overflow-hidden border-y border-white/10 bg-[#030309] py-4">
+        <div className="animate-marquee flex gap-8 whitespace-nowrap px-4">
           {[...servicesTicker, ...servicesTicker].map((item, index) => (
-            <span key={`${item}-${index}`} className="flex items-center gap-3 text-sm font-bold tracking-widest text-white/20">
+            <span key={`${item}-${index}`} className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.24em] text-white/28">
               {item}
-              <span className="text-xs text-indigo-500">*</span>
+              <span className="h-1 w-1 rounded-full bg-teal-300/70" />
             </span>
           ))}
         </div>

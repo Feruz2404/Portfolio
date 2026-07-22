@@ -8,7 +8,7 @@ export default async function AdminAnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Analytics</h1>
+      <h1 className="text-2xl font-semibold tracking-normal">Analytics</h1>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-xl border border-white/10 bg-surface-01 p-5">
           <div className="text-sm text-white/60">Total page views</div>

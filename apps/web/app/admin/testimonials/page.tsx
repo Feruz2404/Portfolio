@@ -8,7 +8,7 @@ export default async function AdminTestimonialsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Testimonials</h1>
+      <h1 className="text-2xl font-semibold tracking-normal">Testimonials</h1>
       <div className="overflow-hidden rounded-xl border border-white/10">
         <table className="w-full text-sm">
           <thead className="bg-surface-01 text-left text-white/60">

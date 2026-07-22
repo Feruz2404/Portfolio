@@ -18,7 +18,7 @@ export default function CtaSection() {
         transition={{ duration: 0.8 }}
         className="relative z-10 text-center max-w-2xl mx-auto"
       >
-        <h2 className="text-4xl md:text-5xl font-black tracking-tight">Ready to build something amazing?</h2>
+        <h2 className="text-4xl md:text-5xl font-black tracking-normal">Ready to build something amazing?</h2>
         <p className="mt-4 text-white/50">Share your idea and let&apos;s turn it into a product people love.</p>
         <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
           <input

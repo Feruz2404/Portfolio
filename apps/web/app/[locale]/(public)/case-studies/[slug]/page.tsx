@@ -15,7 +15,7 @@ export default async function CaseStudyDetailPage({ params }: { params: Promise<
   return (
     <main className="min-h-dvh px-6 py-16">
       <div className="mx-auto max-w-3xl">
-        <h1 className="text-3xl font-semibold tracking-tight">{project.title}</h1>
+        <h1 className="text-3xl font-semibold tracking-normal">{project.title}</h1>
         <section className="mt-10 space-y-8">
           <Block title="Overview" body={study.overview} />
           <Block title="Challenge" body={study.challenge} />

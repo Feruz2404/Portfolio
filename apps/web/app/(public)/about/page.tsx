@@ -1,170 +1,94 @@
-'use client';
+import { getLocale } from "next-intl/server";
 
-import { motion } from 'framer-motion';
+const copy = {
+  en: {
+    eyebrow: "About",
+    title: "A compact senior team for serious digital products.",
+    body: "We combine architecture, product design, and full-stack engineering to help teams ship systems that feel premium and operate reliably.",
+    principles: [
+      { title: "Architecture first", body: "Data, auth, permissions, and deployment constraints are mapped before visual polish begins." },
+      { title: "Editorial interfaces", body: "The surface gets rhythm, hierarchy, and motion that supports comprehension instead of distracting from it." },
+      { title: "Operational trust", body: "Admin workflows, audit trails, validation, and safe defaults matter as much as the public landing page." },
+    ],
+    stackTitle: "Core stack",
+    valuesTitle: "What we optimize for",
+    values: ["Clarity", "Performance", "Security", "Maintainability"],
+  },
+  ru: {
+    eyebrow: "О нас",
+    title: "Компактная senior-команда для серьёзных цифровых продуктов.",
+    body: "Мы соединяем архитектуру, продуктовый дизайн и full-stack разработку, чтобы системы выглядели премиально и работали надёжно.",
+    principles: [
+      { title: "Сначала архитектура", body: "Данные, auth, права и деплой проектируются до визуальной полировки." },
+      { title: "Редакционные интерфейсы", body: "Поверхность получает ритм, иерархию и движение, которое помогает понимать продукт." },
+      { title: "Операционное доверие", body: "Admin workflows, аудит, валидация и безопасные defaults важны не меньше public сайта." },
+    ],
+    stackTitle: "Основной стек",
+    valuesTitle: "Что мы оптимизируем",
+    values: ["Ясность", "Скорость", "Безопасность", "Поддерживаемость"],
+  },
+  uz: {
+    eyebrow: "Biz haqimizda",
+    title: "Jiddiy raqamli mahsulotlar uchun ixcham senior jamoa.",
+    body: "Arxitektura, product design va full-stack engineering birlashib, premium ko'rinadigan va ishonchli ishlaydigan tizimlarni yaratadi.",
+    principles: [
+      { title: "Avval arxitektura", body: "Data, auth, ruxsatlar va deploy cheklovlari vizual polishdan oldin aniqlanadi." },
+      { title: "Editorial interfeyslar", body: "Yuza ritm, ierarxiya va tushunishga yordam beradigan sokin motion oladi." },
+      { title: "Operatsion ishonch", body: "Admin workflows, audit, validatsiya va safe defaults public sahifadek muhim." },
+    ],
+    stackTitle: "Asosiy stack",
+    valuesTitle: "Nimani optimallashtiramiz",
+    values: ["Aniqlik", "Tezlik", "Xavfsizlik", "Qo'llab-quvvatlash"],
+  },
+} as const;
 
-// Tech stack items
-const techStack = [
-  { name: 'Next.js', icon: '▲' },
-  { name: 'React', icon: '⚛' },
-  { name: 'TypeScript', icon: 'TS' },
-  { name: 'Tailwind CSS', icon: '🎨' },
-  { name: 'Prisma', icon: '◆' },
-  { name: 'PostgreSQL', icon: '🐘' },
-  { name: 'Node.js', icon: '⬡' },
-  { name: 'Docker', icon: '🐳' },
-  { name: 'Git', icon: '⎇' },
-  { name: 'Figma', icon: '🎭' },
-  { name: 'REST API', icon: '🔌' },
-  { name: 'GraphQL', icon: '◈' },
-];
+const stack = ["Next.js", "React", "TypeScript", "Prisma", "PostgreSQL", "NextAuth", "Three.js", "Tailwind"];
 
-const values = [
-  { title: 'Quality First', desc: 'We write clean, maintainable code that stands the test of time.' },
-  { title: 'User Focused', desc: 'Every decision is made with the end user experience in mind.' },
-  { title: 'Always Learning', desc: 'Technology evolves fast. We stay ahead of the curve.' },
-  { title: 'Transparent', desc: 'Open communication and honest timelines, always.' },
-];
+function getCopy(locale: string) {
+  if (locale === "ru" || locale === "uz") return copy[locale];
+  return copy.en;
+}
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const text = getCopy(await getLocale());
+
   return (
-    <main className="min-h-dvh">
-      {/* Hero */}
-      <section className="relative px-6 py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/30 via-transparent to-purple-950/20" />
-        <div className="relative z-10 max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="inline-block px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-medium mb-6">
-              About Us
-            </span>
-            <h1 className="text-5xl md:text-7xl font-black tracking-tight">
-              We build{' '}
-              <span className="gradient-text">digital products</span>{' '}
-              people love
-            </h1>
-            <p className="mt-6 text-lg text-white/50 max-w-2xl mx-auto leading-relaxed">
-              A passionate team of developers and designers creating exceptional web experiences for clients worldwide.
-            </p>
-          </motion.div>
+    <main className="min-h-dvh px-6 pb-24 pt-32">
+      <section className="section-shell">
+        <p className="section-eyebrow">{text.eyebrow}</p>
+        <div className="mt-5 grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
+          <h1 className="section-title">{text.title}</h1>
+          <p className="max-w-xl text-base leading-8 text-white/58 lg:justify-self-end">{text.body}</p>
         </div>
       </section>
 
-      {/* Mission & Vision */}
-      <section className="px-6 py-24">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="glass p-8 rounded-2xl"
-          >
-            <div className="text-4xl mb-4">🎯</div>
-            <h2 className="text-2xl font-bold mb-3">Our Mission</h2>
-            <p className="text-white/50 leading-relaxed">
-              To deliver world-class digital solutions that empower businesses to grow, scale, and succeed in the modern digital landscape. We combine cutting-edge technology with thoughtful design.
-            </p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="glass p-8 rounded-2xl"
-          >
-            <div className="text-4xl mb-4">🚀</div>
-            <h2 className="text-2xl font-bold mb-3">Our Vision</h2>
-            <p className="text-white/50 leading-relaxed">
-              To become the most trusted technology partner for businesses across Central Asia and beyond, known for quality, reliability, and innovation that makes a real difference.
-            </p>
-          </motion.div>
-        </div>
+      <section className="section-shell grid gap-px border border-white/10 bg-white/10 py-20 lg:grid-cols-3">
+        {text.principles.map((principle, index) => (
+          <article key={principle.title} className="min-h-[300px] bg-[#05050d] p-7">
+            <div className="font-mono text-sm text-teal-200/60">0{index + 1}</div>
+            <h2 className="mt-16 text-2xl font-semibold text-white">{principle.title}</h2>
+            <p className="mt-4 text-sm leading-7 text-white/52">{principle.body}</p>
+          </article>
+        ))}
       </section>
 
-      {/* Tech Stack */}
-      <section className="px-6 py-24 bg-gradient-to-b from-transparent via-indigo-950/10 to-transparent">
-        <div className="max-w-6xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-black text-center mb-16"
-          >
-            Tech Stack
-          </motion.h2>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
-            {techStack.map((tech, i) => (
-              <motion.div
-                key={tech.name}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                whileHover={{ scale: 1.05, borderColor: 'rgba(99,102,241,0.5)' }}
-                className="glass p-4 rounded-xl text-center group cursor-default transition-all duration-300"
-              >
-                <div className="text-2xl mb-2">{tech.icon}</div>
-                <div className="text-xs text-white/60 group-hover:text-white transition-colors">{tech.name}</div>
-              </motion.div>
+      <section className="section-shell grid gap-10 border-t border-white/10 py-20 lg:grid-cols-[0.8fr_1.2fr]">
+        <div>
+          <p className="section-eyebrow">{text.stackTitle}</p>
+          <h2 className="mt-5 text-4xl font-semibold tracking-normal text-white">{text.valuesTitle}</h2>
+        </div>
+        <div className="space-y-8">
+          <div className="grid grid-cols-2 gap-px border border-white/10 bg-white/10 sm:grid-cols-4">
+            {text.values.map((value) => (
+              <div key={value} className="bg-[#05050d] p-5 text-sm font-semibold text-white/72">{value}</div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Values */}
-      <section className="px-6 py-24">
-        <div className="max-w-6xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-black text-center mb-16"
-          >
-            Our Values
-          </motion.h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {values.map((v, i) => (
-              <motion.div
-                key={v.title}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="glass p-6 rounded-2xl hover:-translate-y-1 transition-all duration-300"
-              >
-                <div className="w-8 h-0.5 bg-indigo-500 mb-4" />
-                <h3 className="font-bold mb-2">{v.title}</h3>
-                <p className="text-sm text-white/50 leading-relaxed">{v.desc}</p>
-              </motion.div>
+          <div className="flex flex-wrap gap-2">
+            {stack.map((item) => (
+              <span key={item} className="border border-white/10 px-3 py-2 text-xs uppercase tracking-[0.16em] text-white/48">
+                {item}
+              </span>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="px-6 py-24">
-        <div className="max-w-4xl mx-auto">
-          <div className="glass rounded-2xl p-12">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-              {[
-                { number: '50+', label: 'Projects Delivered' },
-                { number: '5+', label: 'Years Experience' },
-                { number: '30+', label: 'Happy Clients' },
-                { number: '3', label: 'Languages' },
-              ].map((stat, i) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                >
-                  <div className="text-4xl md:text-5xl font-black gradient-text">{stat.number}</div>
-                  <div className="mt-2 text-sm text-white/40">{stat.label}</div>
-                </motion.div>
-              ))}
-            </div>
           </div>
         </div>
       </section>

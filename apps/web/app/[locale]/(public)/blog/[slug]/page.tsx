@@ -20,7 +20,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               {post.publishedAt.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
             </time>
           )}
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight leading-tight">{post.title}</h1>
+          <h1 className="mt-3 text-3xl font-semibold tracking-normal leading-tight">{post.title}</h1>
           {post.excerpt && (
             <p className="mt-4 text-lg text-white/60 leading-relaxed">{post.excerpt}</p>
           )}

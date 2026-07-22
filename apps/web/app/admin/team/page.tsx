@@ -12,7 +12,7 @@ export default async function AdminTeamPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Team</h1>
+          <h1 className="text-2xl font-semibold tracking-normal">Team</h1>
           <p className="mt-1 text-sm text-white/60">Manage team member profiles.</p>
         </div>
         <Link href="/admin/team/new" className="rounded-md bg-brand-violet px-3 py-2 text-sm font-semibold">

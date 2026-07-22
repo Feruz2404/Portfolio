@@ -22,45 +22,56 @@ export default function LoginForm() {
         const email = String(form.get("email") || "").trim();
         const password = String(form.get("password") || "");
 
-        const res = await signIn("credentials", {
-          email,
-          password,
-          redirect: false,
-          callbackUrl: "/admin/dashboard"
-        });
+        try {
+          const res = await signIn("credentials", {
+            email,
+            password,
+            redirect: false,
+            callbackUrl: "/admin/dashboard",
+          });
 
-        if (res?.error) {
-          setError("Invalid credentials");
-        } else {
-          router.push("/admin/dashboard" as Route);
+          if (!res || res.error) {
+            setError("The email or password is incorrect.");
+            return;
+          }
+
+          router.replace("/admin/dashboard" as Route);
           router.refresh();
+        } catch {
+          setError("Unable to sign in right now. Check the admin environment and database connection.");
+        } finally {
+          setLoading(false);
         }
-        setLoading(false);
       }}
     >
       <div className="space-y-2">
-        <label className="text-sm text-white/70">Email</label>
+        <label htmlFor="admin-email" className="text-sm text-white/70">Email</label>
         <input
+          id="admin-email"
           name="email"
           type="email"
+          autoComplete="email"
           required
-          className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm outline-none focus:border-white/20"
+          className="w-full border border-white/10 bg-surface-00 px-3 py-2.5 text-sm outline-none transition-colors focus:border-teal-200/50"
         />
       </div>
       <div className="space-y-2">
-        <label className="text-sm text-white/70">Password</label>
+        <label htmlFor="admin-password" className="text-sm text-white/70">Password</label>
         <input
+          id="admin-password"
           name="password"
           type="password"
+          autoComplete="current-password"
+          minLength={8}
           required
-          className="w-full rounded-md border border-white/10 bg-surface-00 px-3 py-2 text-sm outline-none focus:border-white/20"
+          className="w-full border border-white/10 bg-surface-00 px-3 py-2.5 text-sm outline-none transition-colors focus:border-teal-200/50"
         />
       </div>
-      {error ? <p className="text-sm text-red-400">{error}</p> : null}
+      {error ? <p className="border border-red-300/20 bg-red-950/30 px-3 py-2 text-sm text-red-200">{error}</p> : null}
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-md bg-brand-violet px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
+        className="w-full bg-white px-3 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-teal-100 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {loading ? "Signing in..." : "Sign in"}
       </button>

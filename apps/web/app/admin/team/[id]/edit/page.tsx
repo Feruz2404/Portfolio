@@ -12,7 +12,7 @@ export default async function EditTeamMemberPage({ params }: { params: Promise<{
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Edit Team Member</h1>
+      <h1 className="text-2xl font-semibold tracking-normal">Edit Team Member</h1>
       <TeamMemberForm mode="edit" member={member} />
     </div>
   );
