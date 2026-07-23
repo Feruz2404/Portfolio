@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminApiContext } from "@/lib/adminAuth";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { prismaErrorResponse } from "@/lib/api-errors";
+import { parseJsonBody, prismaErrorResponse } from "@/lib/api-errors";
 import { z } from "zod";
 
 const testimonialSchema = z.object({
@@ -14,14 +14,16 @@ const testimonialSchema = z.object({
   rating: z.number().int().min(1).max(5).default(5),
   featured: z.boolean().default(false),
   approved: z.boolean().default(false),
-  projectId: z.string().optional().nullable()
+  projectId: z.string().optional().nullable(),
 });
 
 export async function GET() {
   const gate = await getAdminApiContext("testimonials:write");
   if (!gate.ok) return gate.response;
 
-  const testimonials = await prisma.testimonial.findMany({ orderBy: { updatedAt: "desc" } });
+  const testimonials = await prisma.testimonial.findMany({
+    orderBy: { updatedAt: "desc" },
+  });
   return NextResponse.json({ testimonials });
 }
 
@@ -29,9 +31,8 @@ export async function POST(req: Request) {
   const gate = await getAdminApiContext("testimonials:write");
   if (!gate.ok) return gate.response;
 
-  const body = await req.json().catch(() => null);
-  const parsed = testimonialSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  const parsed = await parseJsonBody(req, testimonialSchema);
+  if (!parsed.ok) return parsed.response;
 
   try {
     const testimonial = await prisma.testimonial.create({ data: parsed.data });
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
       entity: "Testimonial",
       entityId: testimonial.id,
       userId: gate.context.userId,
-      changes: { name: testimonial.name, approved: testimonial.approved }
+      changes: { name: testimonial.name, approved: testimonial.approved },
     });
     return NextResponse.json({ testimonial }, { status: 201 });
   } catch (error) {

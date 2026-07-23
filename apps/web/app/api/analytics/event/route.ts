@@ -2,11 +2,20 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
-import { prismaErrorResponse } from "@/lib/api-errors";
+import {
+  parseLimitedJsonBody,
+  prismaErrorResponse,
+  tooManyRequestsResponse,
+} from "@/lib/api-errors";
 
 const MAX_BODY_BYTES = 4096;
 
-const propertyValue = z.union([z.string().max(500), z.number(), z.boolean(), z.null()]);
+const propertyValue = z.union([
+  z.string().max(500),
+  z.number(),
+  z.boolean(),
+  z.null(),
+]);
 
 const schema = z.object({
   event: z.string().min(1).max(120),
@@ -19,20 +28,15 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   const ip = getClientIp(req);
-  const limited = checkRateLimit({ key: `analytics:${ip}`, limit: 60, windowMs: 60 * 1000 });
-  if (!limited.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  const limited = checkRateLimit({
+    key: `analytics:${ip}`,
+    limit: 60,
+    windowMs: 60 * 1000,
+  });
+  if (!limited.allowed) return tooManyRequestsResponse();
 
-  const raw = await req.text().catch(() => "");
-  if (raw.length > MAX_BODY_BYTES) return NextResponse.json({ error: "Payload too large" }, { status: 413 });
-
-  let body: unknown = null;
-  try {
-    body = raw ? JSON.parse(raw) : null;
-  } catch {
-    body = null;
-  }
-  const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  const parsed = await parseLimitedJsonBody(req, schema, MAX_BODY_BYTES);
+  if (!parsed.ok) return parsed.response;
 
   try {
     await prisma.analyticsEvent.create({

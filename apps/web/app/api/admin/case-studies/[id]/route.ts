@@ -3,14 +3,28 @@ import type { Prisma } from "@prisma/client";
 import { getAdminApiContext } from "@/lib/adminAuth";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { prismaErrorResponse, toJsonInput } from "@/lib/api-errors";
+import {
+  parseJsonBody,
+  prismaErrorResponse,
+  toJsonInput,
+} from "@/lib/api-errors";
 import { z } from "zod";
 
 const metricsSchema = z
-  .array(z.object({ label: z.string().min(1).max(120), value: z.string().min(1).max(120) }))
+  .array(
+    z.object({
+      label: z.string().min(1).max(120),
+      value: z.string().min(1).max(120),
+    }),
+  )
   .max(20);
 const timelineSchema = z
-  .array(z.object({ label: z.string().min(1).max(120), date: z.string().max(60).optional() }))
+  .array(
+    z.object({
+      label: z.string().min(1).max(120),
+      date: z.string().max(60).optional(),
+    }),
+  )
   .max(30);
 
 const updateSchema = z.object({
@@ -25,20 +39,26 @@ const updateSchema = z.object({
   published: z.boolean().optional(),
 });
 
-export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const gate = await getAdminApiContext("projects:write");
   if (!gate.ok) return gate.response;
 
-  const body = await req.json().catch(() => null);
-  const parsed = updateSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  const parsed = await parseJsonBody(req, updateSchema);
+  if (!parsed.ok) return parsed.response;
 
   const { id } = await params;
   const { metrics, timeline, ...rest } = parsed.data;
   try {
     const study = await prisma.caseStudy.update({
       where: { id },
-      data: { ...rest, metrics: toJsonInput(metrics), timeline: toJsonInput(timeline) },
+      data: {
+        ...rest,
+        metrics: toJsonInput(metrics),
+        timeline: toJsonInput(timeline),
+      },
     });
     await writeAuditLog({
       action: "update",
@@ -53,14 +73,22 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 }
 
-export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const gate = await getAdminApiContext("projects:write");
   if (!gate.ok) return gate.response;
 
   const { id } = await params;
   try {
     await prisma.caseStudy.delete({ where: { id } });
-    await writeAuditLog({ action: "delete", entity: "CaseStudy", entityId: id, userId: gate.context.userId });
+    await writeAuditLog({
+      action: "delete",
+      entity: "CaseStudy",
+      entityId: id,
+      userId: gate.context.userId,
+    });
     return NextResponse.json({ ok: true });
   } catch (error) {
     return prismaErrorResponse(error);

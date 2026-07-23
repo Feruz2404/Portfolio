@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminApiContext } from "@/lib/adminAuth";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { prismaErrorResponse } from "@/lib/api-errors";
+import { parseJsonBody, prismaErrorResponse } from "@/lib/api-errors";
 import { z } from "zod";
 
 const serviceSchema = z.object({
@@ -17,14 +17,16 @@ const serviceSchema = z.object({
   duration: z.string().optional().nullable(),
   featured: z.boolean().default(false),
   order: z.number().int().default(0),
-  isActive: z.boolean().default(true)
+  isActive: z.boolean().default(true),
 });
 
 export async function GET() {
   const gate = await getAdminApiContext("services:write");
   if (!gate.ok) return gate.response;
 
-  const services = await prisma.service.findMany({ orderBy: [{ featured: "desc" }, { order: "asc" }] });
+  const services = await prisma.service.findMany({
+    orderBy: [{ featured: "desc" }, { order: "asc" }],
+  });
   return NextResponse.json({ services });
 }
 
@@ -32,9 +34,8 @@ export async function POST(req: Request) {
   const gate = await getAdminApiContext("services:write");
   if (!gate.ok) return gate.response;
 
-  const body = await req.json().catch(() => null);
-  const parsed = serviceSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  const parsed = await parseJsonBody(req, serviceSchema);
+  if (!parsed.ok) return parsed.response;
 
   try {
     const service = await prisma.service.create({ data: parsed.data });
@@ -43,7 +44,7 @@ export async function POST(req: Request) {
       entity: "Service",
       entityId: service.id,
       userId: gate.context.userId,
-      changes: { title: service.title, isActive: service.isActive }
+      changes: { title: service.title, isActive: service.isActive },
     });
     return NextResponse.json({ service }, { status: 201 });
   } catch (error) {

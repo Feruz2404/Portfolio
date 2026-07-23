@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminApiContext } from "@/lib/adminAuth";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { prismaErrorResponse } from "@/lib/api-errors";
+import { parseJsonBody, prismaErrorResponse } from "@/lib/api-errors";
 import { z } from "zod";
 
 const updateSchema = z.object({
@@ -19,37 +19,46 @@ const updateSchema = z.object({
   yearsOfExp: z.number().int().optional().nullable(),
   certifications: z.array(z.string()).optional(),
   isActive: z.boolean().optional(),
-  order: z.number().int().optional()
+  order: z.number().int().optional(),
 });
 
-export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const gate = await getAdminApiContext("team:write");
   if (!gate.ok) return gate.response;
 
   const { id } = await params;
   const member = await prisma.teamMember.findUnique({ where: { id } });
-  if (!member) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!member)
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   return NextResponse.json({ member });
 }
 
-export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const gate = await getAdminApiContext("team:write");
   if (!gate.ok) return gate.response;
 
-  const body = await req.json().catch(() => null);
-  const parsed = updateSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  const parsed = await parseJsonBody(req, updateSchema);
+  if (!parsed.ok) return parsed.response;
 
   const { id } = await params;
   try {
-    const member = await prisma.teamMember.update({ where: { id }, data: parsed.data });
+    const member = await prisma.teamMember.update({
+      where: { id },
+      data: parsed.data,
+    });
     await writeAuditLog({
       action: "update",
       entity: "TeamMember",
       entityId: member.id,
       userId: gate.context.userId,
-      changes: parsed.data
+      changes: parsed.data,
     });
     return NextResponse.json({ member });
   } catch (error) {
@@ -57,7 +66,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 }
 
-export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const gate = await getAdminApiContext("team:write");
   if (!gate.ok) return gate.response;
 
@@ -68,7 +80,7 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
       action: "delete",
       entity: "TeamMember",
       entityId: id,
-      userId: gate.context.userId
+      userId: gate.context.userId,
     });
     return NextResponse.json({ ok: true });
   } catch (error) {

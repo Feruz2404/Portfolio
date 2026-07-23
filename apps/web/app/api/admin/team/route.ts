@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminApiContext } from "@/lib/adminAuth";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { prismaErrorResponse } from "@/lib/api-errors";
+import { parseJsonBody, prismaErrorResponse } from "@/lib/api-errors";
 import { z } from "zod";
 
 const createSchema = z.object({
@@ -18,14 +18,16 @@ const createSchema = z.object({
   yearsOfExp: z.number().int().optional(),
   certifications: z.array(z.string()).default([]),
   isActive: z.boolean().default(true),
-  order: z.number().int().default(0)
+  order: z.number().int().default(0),
 });
 
 export async function GET() {
   const gate = await getAdminApiContext("team:write");
   if (!gate.ok) return gate.response;
 
-  const team = await prisma.teamMember.findMany({ orderBy: [{ order: "asc" }, { updatedAt: "desc" }] });
+  const team = await prisma.teamMember.findMany({
+    orderBy: [{ order: "asc" }, { updatedAt: "desc" }],
+  });
   return NextResponse.json({ team });
 }
 
@@ -33,9 +35,8 @@ export async function POST(req: Request) {
   const gate = await getAdminApiContext("team:write");
   if (!gate.ok) return gate.response;
 
-  const body = await req.json().catch(() => null);
-  const parsed = createSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  const parsed = await parseJsonBody(req, createSchema);
+  if (!parsed.ok) return parsed.response;
 
   try {
     const member = await prisma.teamMember.create({ data: parsed.data });
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
       entity: "TeamMember",
       entityId: member.id,
       userId: gate.context.userId,
-      changes: { fullName: member.fullName, position: member.position }
+      changes: { fullName: member.fullName, position: member.position },
     });
     return NextResponse.json({ member }, { status: 201 });
   } catch (error) {

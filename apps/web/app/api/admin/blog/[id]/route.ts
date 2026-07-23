@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { getAdminApiContext } from "@/lib/adminAuth";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { prismaErrorResponse } from "@/lib/api-errors";
+import { parseJsonBody, prismaErrorResponse } from "@/lib/api-errors";
+import { calculateReadingTime } from "@/lib/reading-time";
 import { z } from "zod";
 
 const schema = z.object({
@@ -12,14 +13,13 @@ const schema = z.object({
   content: z.string().min(10).optional(),
   coverImage: z.string().optional().nullable(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).optional(),
-  publishedAt: z.string().datetime().optional().nullable()
+  publishedAt: z.string().datetime().optional().nullable(),
 });
 
-function calcReadingTime(text: string) {
-  return Math.max(1, Math.ceil(text.split(/\s+/).filter(Boolean).length / 200));
-}
-
-export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const gate = await getAdminApiContext("blog:write");
   if (!gate.ok) return gate.response;
 
@@ -30,13 +30,15 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   return NextResponse.json({ post });
 }
 
-export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const gate = await getAdminApiContext("blog:write");
   if (!gate.ok) return gate.response;
 
-  const body = await req.json().catch(() => null);
-  const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  const parsed = await parseJsonBody(req, schema);
+  if (!parsed.ok) return parsed.response;
 
   const { id } = await params;
   try {
@@ -44,21 +46,23 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       where: { id },
       data: {
         ...parsed.data,
-        ...(parsed.data.content ? { readingTime: calcReadingTime(parsed.data.content) } : {}),
+        ...(parsed.data.content
+          ? { readingTime: calculateReadingTime(parsed.data.content) }
+          : {}),
         publishedAt:
           parsed.data.publishedAt !== undefined
             ? parsed.data.publishedAt
               ? new Date(parsed.data.publishedAt)
               : null
-            : undefined
-      }
+            : undefined,
+      },
     });
     await writeAuditLog({
       action: "update",
       entity: "BlogPost",
       entityId: post.id,
       userId: gate.context.userId,
-      changes: parsed.data
+      changes: parsed.data,
     });
     return NextResponse.json({ post });
   } catch (error) {
@@ -66,7 +70,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 }
 
-export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const gate = await getAdminApiContext("blog:write");
   if (!gate.ok) return gate.response;
 
@@ -77,7 +84,7 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
       action: "delete",
       entity: "BlogPost",
       entityId: id,
-      userId: gate.context.userId
+      userId: gate.context.userId,
     });
     return NextResponse.json({ ok: true });
   } catch (error) {

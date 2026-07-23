@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminApiContext } from "@/lib/adminAuth";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { prismaErrorResponse } from "@/lib/api-errors";
+import { parseJsonBody, prismaErrorResponse } from "@/lib/api-errors";
 import { z } from "zod";
 
 const mediaSchema = z.object({
@@ -12,7 +12,7 @@ const mediaSchema = z.object({
   size: z.number().int().nonnegative(),
   alt: z.string().optional().nullable(),
   caption: z.string().optional().nullable(),
-  folder: z.string().optional().nullable()
+  folder: z.string().optional().nullable(),
 });
 
 export async function GET() {
@@ -27,9 +27,8 @@ export async function POST(req: Request) {
   const gate = await getAdminApiContext("media:write");
   if (!gate.ok) return gate.response;
 
-  const body = await req.json().catch(() => null);
-  const parsed = mediaSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  const parsed = await parseJsonBody(req, mediaSchema);
+  if (!parsed.ok) return parsed.response;
 
   try {
     const item = await prisma.media.create({ data: parsed.data });
@@ -38,7 +37,7 @@ export async function POST(req: Request) {
       entity: "Media",
       entityId: item.id,
       userId: gate.context.userId,
-      changes: { filename: item.filename, mimeType: item.mimeType }
+      changes: { filename: item.filename, mimeType: item.mimeType },
     });
     return NextResponse.json({ media: item }, { status: 201 });
   } catch (error) {

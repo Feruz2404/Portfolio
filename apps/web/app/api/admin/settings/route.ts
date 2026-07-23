@@ -3,10 +3,22 @@ import { revalidatePath } from "next/cache";
 import { getAdminApiContext } from "@/lib/adminAuth";
 import { writeAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/db";
-import { prismaErrorResponse } from "@/lib/api-errors";
+import { parseJsonBody, prismaErrorResponse } from "@/lib/api-errors";
 import { contactSettingsSchema } from "@/lib/settings";
 
 const CONTACT_KEY = "contact";
+
+function normalizeContactSettings(raw: unknown) {
+  if (!raw || typeof raw !== "object") return raw;
+
+  // Treat empty strings as "unset" so url()/email() validation passes.
+  return Object.fromEntries(
+    Object.entries(raw as Record<string, unknown>).map(([key, value]) => [
+      key,
+      value === "" ? undefined : value,
+    ]),
+  );
+}
 
 export async function GET() {
   const gate = await getAdminApiContext("users:write");
@@ -20,17 +32,16 @@ export async function PUT(req: Request) {
   const gate = await getAdminApiContext("users:write");
   if (!gate.ok) return gate.response;
 
-  const raw = await req.json().catch(() => null);
-  // Treat empty strings as "unset" so url()/email() validation passes.
-  const normalized =
-    raw && typeof raw === "object"
-      ? Object.fromEntries(Object.entries(raw as Record<string, unknown>).map(([k, v]) => [k, v === "" ? undefined : v]))
-      : raw;
+  const parsed = await parseJsonBody(
+    req,
+    contactSettingsSchema,
+    normalizeContactSettings,
+  );
+  if (!parsed.ok) return parsed.response;
 
-  const parsed = contactSettingsSchema.safeParse(normalized);
-  if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
-
-  const value = Object.fromEntries(Object.entries(parsed.data).map(([k, v]) => [k, v ?? null]));
+  const value = Object.fromEntries(
+    Object.entries(parsed.data).map(([k, v]) => [k, v ?? null]),
+  );
 
   try {
     const row = await prisma.setting.upsert({

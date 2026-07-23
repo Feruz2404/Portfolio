@@ -9,8 +9,14 @@ export function getResend() {
   return resend;
 }
 
-/** The verified sender address. Returns null when unset — callers must skip
- *  sending rather than fall back to a placeholder. */
+export function getEmailConfig() {
+  const env = getEnv();
+  if (!env.RESEND_API_KEY || !env.FROM_EMAIL) return null;
+
+  return { from: env.FROM_EMAIL };
+}
+
+/** Return the verified sender address, or null when email is not configured. */
 export function getFromEmail(): string | null {
   return getEnv().FROM_EMAIL ?? null;
 }
